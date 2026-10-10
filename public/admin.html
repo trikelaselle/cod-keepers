@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>CoD Keepers · Commissioner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Chode of Destiny · Commissioner</div>
+    <h1>Keeper <span>desk</span></h1>
+  </header>
+
+  <form id="login" class="row" autocomplete="on">
+    <label for="pw" class="mgr">Commissioner password</label>
+    <input type="password" id="pw" autocomplete="current-password" required>
+    <button class="btn primary" type="submit">Open</button>
+    <span class="msg" id="loginMsg" role="status"></span>
+  </form>
+
+  <div id="desk" hidden>
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="title-row">
+          <h2 id="count"></h2>
+          <span class="mgr" id="deadline"></span>
+        </div>
+        <div class="row">
+          <button class="btn" id="copyLinks" type="button">Copy all team links</button>
+          <button class="btn" id="csv" type="button">Download picks (CSV)</button>
+          <button class="btn" id="reveal" type="button"></button>
+          <button class="btn" id="refresh" type="button">Refresh</button>
+          <span class="msg" id="deskMsg" role="status"></span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Team</th><th>Status</th><th class="n">Cap hit kept</th><th>Cuts</th><th>Private link</th><th></th>
+          </tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+    <p class="rules">Each link opens only that team's roster. Send each manager his own link privately. "Reveal picks" shows every submitted team's keeps and cuts to the whole league; you can hide them again.</p>
+  </div>
+</div>
+<script src="/admin.js"></script>
+</body>
+</html>

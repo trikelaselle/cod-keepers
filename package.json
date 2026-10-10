@@ -1,0 +1,8 @@
+{
+  "name": "cod-keepers",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chode of Destiny keeper decisions: private team links, sealed submissions, commissioner desk.",
+  "type": "module",
+  "engines": { "node": ">=18" }
+}

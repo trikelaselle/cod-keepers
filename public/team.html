@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Chode of Destiny Keepers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Chode of Destiny · Season 2 offseason</div>
+    <h1>Keeper <span>decisions</span></h1>
+    <p class="lede" id="lede">Mark each player Keep or Cut, then submit. Salaries already include the Season 2 raise from the league charter. You need to be under the $210 cap to submit.</p>
+  </header>
+
+  <div class="banner" id="banner" hidden></div>
+
+  <section class="sheet" id="sheet" hidden>
+    <div class="sheet-head">
+      <div class="title-row">
+        <h2 id="tname"></h2>
+        <span class="mgr" id="tmgr"></span>
+      </div>
+      <div class="stats">
+        <div class="stat"><span class="k">Cap hit kept</span><span class="v" id="sHit"></span></div>
+        <div class="stat"><span class="k">Room vs cap</span><span class="v" id="sRoom"></span></div>
+        <div class="stat"><span class="k">Draft budget</span><span class="v" id="sBudget"></span></div>
+        <div class="stat"><span class="k">Spots to fill</span><span class="v" id="sSpots"></span></div>
+      </div>
+      <div>
+        <div class="meter" aria-hidden="true"><div class="fill" id="mFill"></div><div class="cap" id="mCap"></div></div>
+        <div class="meter-lbl"><span>$0</span><span id="mCapLbl"></span><span id="mMax"></span></div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Player</th><th class="hide-sm">Pos</th><th>Slot</th>
+          <th class="n hide-sm">2025 $</th><th class="n">Season 2 $</th><th class="n">Cap hit</th><th>Decision</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="foot">
+      <button class="btn primary" id="submit" type="button">Submit decisions</button>
+      <button class="btn" id="reset" type="button">Keep everyone</button>
+      <span class="msg" id="msg" role="status"></span>
+    </div>
+  </section>
+
+  <section class="reveal" id="revealSec" hidden>
+    <h2>Everyone's picks</h2>
+    <div id="reveal" class="reveal"></div>
+  </section>
+
+  <section id="boardSec" hidden>
+    <h2>Who has submitted</h2>
+    <p class="lede">You'll only see other teams' picks after the commissioner reveals them.</p>
+    <div class="board-grid" id="board"></div>
+  </section>
+
+  <section class="rules">
+    <p><strong>How the numbers work.</strong> Season 2 salary is last season's salary plus a 10% raise (at least $1), rounded up. Cap hit counts IR players at half their salary (rounded up) and taxi players at $0.</p>
+    <p>Draft budget is the cap minus the cap hit of everyone you keep. You need $1 for each open roster spot. Spots to fill counts the 15-player active roster and doesn't include IR or taxi.</p>
+    <p>Anyone you cut goes into the free agent auction, and you can bid on him there. You can change your picks and submit again until the deadline.</p>
+  </section>
+</div>
+<script src="/team.js"></script>
+</body>
+</html>
