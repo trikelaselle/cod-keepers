@@ -4,6 +4,7 @@
   try { pw = sessionStorage.getItem("cod-admin") || ""; } catch (e) {}
   const msg = (el, text, kind) => { $(el).textContent = text; $(el).className = "msg" + (kind ? " " + kind : ""); };
   const fullLink = l => location.origin + l;
+  const cash = c => "$" + (c / 100).toFixed(2).replace(/\.00$/, "");
   const fmtTime = iso => { try { return new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); } catch (e) { return iso; } };
 
   async function api(method, body) {
@@ -36,7 +37,8 @@
 
   function render() {
     const done = data.teams.filter(t => t.submission).length;
-    $("count").textContent = done + " of " + data.teams.length + " submitted";
+    const pot = data.teams.reduce((a, t) => a + (t.submission ? t.buyInCents : 0), 0);
+    $("count").textContent = done + " of " + data.teams.length + " submitted" + (done ? " · pot so far " + cash(pot) : "");
     $("deadline").textContent = data.deadline ? (data.locked ? "Locked since " : "Deadline ") + fmtTime(data.deadline) : "No deadline set";
     $("reveal").textContent = data.revealed ? "Hide picks from league" : "Reveal picks to league";
     $("rows").replaceChildren(...data.teams.map(t => {
@@ -70,7 +72,8 @@
         };
         act.append(c);
       }
-      tr.append(nm, st, td(s ? "$" + s.capHit : "$" + t.fullHit + " now", "n"), td(cuts), ln, act);
+      const bi = s ? cash(t.buyInCents) : (t.fullHit > data.hardCap ? "over hard cap" : cash(t.fullBuyInCents) + " now");
+      tr.append(nm, st, td(s ? "$" + s.capHit : "$" + t.fullHit + " now", "n"), td(bi, "n"), td(cuts), ln, act);
       return tr;
     }));
   }

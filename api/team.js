@@ -1,6 +1,6 @@
 // GET /api/team?token=...  -> this team's roster and submission, plus league status.
 // Other teams' picks are only included once the commissioner reveals them.
-import { TEAMS, CAP, ACTIVE_SPOTS, TAXI_SPOTS, LUXURY_TAX, teamFromToken, deadline, isLocked, send, fail, brief } from "../lib/league.js";
+import { TEAMS, CAP, ACTIVE_SPOTS, TAXI_SPOTS, BUY_IN, teamFromToken, deadline, isLocked, send, fail, brief } from "../lib/league.js";
 import { getJSON, mgetJSON } from "../lib/store.js";
 
 export default async function handler(req, res) {
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
     send(res, 200, {
       team: { team: team.team, manager: team.manager, players: team.players },
       submission: subs[TEAMS.indexOf(team)],
-      cap: CAP, activeSpots: ACTIVE_SPOTS, taxiSpots: TAXI_SPOTS, luxuryTax: LUXURY_TAX,
+      cap: CAP, activeSpots: ACTIVE_SPOTS, taxiSpots: TAXI_SPOTS, buyIn: BUY_IN,
       deadline: deadline(), locked: isLocked(),
       revealed, league,
     });

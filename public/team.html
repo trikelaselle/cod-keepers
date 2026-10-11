@@ -15,7 +15,7 @@
   <header>
     <div class="eyebrow">Chode of Destiny · Season 2 offseason</div>
     <h1>Keeper <span>decisions</span></h1>
-    <p class="lede" id="lede">Mark each player Keep, Taxi or Cut, then submit. Salaries already include the Season 2 raise from the league charter. You need to be under the $210 cap to submit.</p>
+    <p class="lede" id="lede">Mark each player Keep, Taxi or Cut, then submit. Salaries already include the Season 2 raise from the league charter. Your payroll sets your buy-in, and you need to be at or under the $230 hard cap to submit.</p>
   </header>
 
   <div class="banner" id="banner" hidden></div>
@@ -28,8 +28,8 @@
       </div>
       <div class="stats">
         <div class="stat"><span class="k">Cap hit kept</span><span class="v" id="sHit"></span></div>
-        <div class="stat"><span class="k">Room vs cap</span><span class="v" id="sRoom"></span></div>
-        <div class="stat"><span class="k">Draft budget</span><span class="v" id="sBudget"></span></div>
+        <div class="stat"><span class="k">Room to $210</span><span class="v" id="sRoom"></span></div>
+        <div class="stat"><span class="k">Room to $230 hard cap</span><span class="v" id="sBudget"></span></div>
         <div class="stat"><span class="k">Spots to fill</span><span class="v" id="sSpots"></span></div>
         <div class="stat"><span class="k">Taxi squad</span><span class="v" id="sTaxi"></span></div>
       </div>
@@ -37,16 +37,21 @@
         <div class="meter" aria-hidden="true"><div class="band" id="mBand" hidden></div><div class="fill" id="mFill"></div><div class="cap" id="mCap"></div><div class="cap hard" id="mHard" hidden></div></div>
         <div class="meter-lbl"><span>$0</span><span id="mCapLbl"></span><span id="mMax"></span></div>
       </div>
-      <label class="luxtoggle" for="luxOn"><input type="checkbox" id="luxOn"> Preview the proposed luxury tax</label>
-      <div class="lux" id="lux" hidden>
-        <div class="lux-head"><strong>Proposed luxury tax</strong><span class="chip">Not in effect · pending league vote</span></div>
+      <div class="lux" id="lux">
+        <div class="lux-head"><strong>Your buy-in</strong><span class="chip" id="lZone"></span></div>
         <div class="lux-grid">
+          <div class="stat"><span class="k">Projected buy-in</span><span class="v big" id="lBuy"></span></div>
+          <div class="stat"><span class="k">vs. $50 base</span><span class="v" id="lDiff"></span></div>
           <div class="stat"><span class="k">Payroll</span><span class="v" id="lPay"></span></div>
-          <div class="stat"><span class="k">Over soft cap</span><span class="v" id="lOver"></span></div>
-          <div class="stat"><span class="k">Tax (real money)</span><span class="v" id="lTax"></span></div>
-          <div class="stat"><span class="k">Room to hard cap</span><span class="v" id="lHard"></span></div>
         </div>
         <p class="lux-note" id="lNote"></p>
+        <ol class="ladder" aria-label="Buy-in scale">
+          <li><span>Under $210</span><b>$0.25 off per $1 under</b></li>
+          <li><span>$210</span><b>$50</b></li>
+          <li><span>$210 to $220</span><b>+$0.50 per $1</b></li>
+          <li><span>$220 to $230</span><b>+$1 per $1 (max $65)</b></li>
+          <li><span>Over $230</span><b>Not allowed</b></li>
+        </ol>
       </div>
     </div>
     <div class="whatif" id="whatif" hidden>
@@ -83,9 +88,9 @@
   <section class="rules">
     <p><strong>How the numbers work.</strong> Season 2 salary is last season's salary plus a 10% raise (at least $1), rounded up. Cap hit counts IR players at half their salary (rounded up) and taxi players at $0. A player is on IR only if Sleeper lists him as Out as of October 10; anyone healthy or day-to-day counts in full.</p>
     <p><strong>Taxi squad.</strong> You can put up to 4 players on your taxi squad. Only players in their first two NBA seasons are eligible (marked "Taxi-eligible"); Collier and González are grandfathered. A taxi player gets no raise and counts $0 against the cap, but he doesn't fill an active roster spot and doesn't score for you. Per the charter, a player can stay on taxi for at most 2 seasons, and once he's called up to the active roster he can't go back. Marking a current taxi player Keep calls him up.</p>
-    <p><strong>Luxury tax preview.</strong> The league is voting on a luxury tax: teams could go up to $21 over the $210 soft cap (to a $231 hard cap) by paying real money into the pot, $1 per $1 for the first $10 over and $2 per $1 beyond that. A tax team could only bid $1 per player in the free agent draft. The preview shows what your current picks would owe. It isn't in effect: you still need to be under $210 to submit.</p>
+    <p><strong>Buy-in and luxury tax.</strong> The buy-in is $50 at a $210 payroll. Every $1 under $210 takes $0.25 off, every $1 from $210 to $220 adds $0.50, and every $1 from $220 to $230 adds $1. $230 is the hard cap. The tracker uses the players you're keeping; your payroll after the free agent draft and at the trade deadline sets the real number, so money you spend in the draft raises it.</p>
     <p><strong>What-if statuses.</strong> Tap the IR or Active tag on an injured player to preview your cap as if he were on IR or healthy. It's only for planning: your submission and the cap check always use the official statuses.</p>
-    <p>Draft budget is the cap minus the cap hit of everyone you keep. You need $1 for each open roster spot. Spots to fill counts the 15-player active roster and doesn't include IR or taxi.</p>
+    <p>You need at least $1 under the $230 hard cap for each open roster spot. Spots to fill counts the 15-player active roster and doesn't include IR or taxi.</p>
     <p>Anyone you cut goes into the free agent auction, and you can bid on him there. You can change your picks and submit again until the deadline.</p>
   </section>
 </div>

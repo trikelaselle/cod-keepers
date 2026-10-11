@@ -4,18 +4,14 @@
   const token = (location.pathname.match(/\/t\/([a-f0-9]+)/) || [])[1] || "";
   let data = null, choice = {}, dirty = false, saving = false;
   let whatIf = {}; // player id -> previewed slot ("Active" or "IR"); planning only, never submitted
-  let luxOn = false;
-  try { luxOn = localStorage.getItem("cod-lux") === "1"; } catch (e) {}
-  // Proposed luxury tax in real money: $1 per $1 over for the first $10, then $2 per $1 beyond.
-  function luxTax(over, tiers) {
-    let left = Math.max(0, over), tax = 0, prev = 0;
-    for (const t of tiers) {
-      const band = t.upTo == null ? left : Math.min(left, t.upTo - prev);
-      tax += band * t.rate; left -= band; prev = t.upTo ?? prev;
-      if (left <= 0) break;
-    }
-    return tax;
+  // Buy-in (real money, in cents): same formula as lib/league.js buyInCents.
+  function buyInCents(payroll, b) {
+    let c = b.baseCents;
+    if (payroll < b.softCap) c -= (b.softCap - payroll) * b.underCentsPerDollar;
+    for (const t of b.tiers) if (payroll > t.from) c += (Math.min(payroll, t.to) - t.from) * t.centsPerDollar;
+    return Math.max(0, c);
   }
+  const cash = c => (c < 0 ? "-$" : "$") + (Math.abs(c) / 100).toFixed(2).replace(/\.00$/, "");
 
   const fmtTime = iso => {
     try { return new Date(iso).toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
@@ -60,46 +56,48 @@
     $("tname").textContent = t.team;
     $("tmgr").textContent = "Manager: " + t.manager + " · " + t.players.length + " players";
     $("sHit").textContent = money(s.hit);
+    const B = data.buyIn, hard = B.hardCap;
+    const hardRoom = hard - s.hit, offHardRoom = hard - off.hit;
     $("sRoom").textContent = (s.room >= 0 ? "+" : "") + money(s.room);
-    $("sRoom").className = "v " + (s.room >= 0 ? "under" : "over");
-    $("sBudget").textContent = money(Math.max(0, s.room));
+    $("sRoom").className = "v " + (s.room >= 0 ? "under" : "tax");
+    $("sBudget").textContent = (hardRoom >= 0 ? "+" : "") + money(hardRoom);
+    $("sBudget").className = "v " + (hardRoom >= 0 ? "under" : "over");
     $("sSpots").textContent = s.spots;
     $("sTaxi").textContent = taxiUsed + " of " + data.taxiSpots;
     const full = t.players.reduce((a, p) => a + hitFor(p, slotOf(p, true)), 0);
-    const L = data.luxuryTax, showLux = luxOn && !!L;
-    const scale = Math.max(full, data.cap, showLux ? L.hardCap : 0) * 1.05;
+    const scale = Math.max(full, hard) * 1.05;
+    const zone = hardRoom < 0 ? "over" : s.room < 0 ? "tax" : "under";
     $("mFill").style.width = (s.hit / scale * 100) + "%";
-    $("mFill").className = "fill" + (s.room < 0 ? " over" : "");
+    $("mFill").className = "fill" + (zone === "over" ? " over" : zone === "tax" ? " tax" : "");
     $("mCap").style.left = (data.cap / scale * 100) + "%";
-    $("mCapLbl").textContent = "Cap $" + data.cap;
+    $("mHard").style.left = (hard / scale * 100) + "%";
+    $("mBand").style.left = (data.cap / scale * 100) + "%";
+    $("mBand").style.width = ((hard - data.cap) / scale * 100) + "%";
+    $("mHard").hidden = $("mBand").hidden = false;
+    $("mCapLbl").textContent = "$" + data.cap + " · hard cap $" + hard;
     $("mMax").textContent = "Whole roster " + money(full);
-    $("luxOn").checked = showLux;
-    $("mHard").hidden = $("mBand").hidden = $("lux").hidden = !showLux;
-    if (showLux) {
-      $("mHard").style.left = (L.hardCap / scale * 100) + "%";
-      $("mBand").style.left = (L.softCap / scale * 100) + "%";
-      $("mBand").style.width = ((L.hardCap - L.softCap) / scale * 100) + "%";
-      $("mCapLbl").textContent = "Soft cap $" + L.softCap + " · hard cap $" + L.hardCap;
-      const over = s.hit - L.softCap, tax = luxTax(over, L.tiers), hardRoom = L.hardCap - s.hit;
-      $("lPay").textContent = money(s.hit);
-      $("lOver").textContent = over > 0 ? money(over) : "—";
-      $("lTax").textContent = over > 0 ? money(tax) : "$0";
-      $("lTax").className = "v" + (over > 0 ? " over" : " under");
-      $("lHard").textContent = (hardRoom >= 0 ? "+" : "") + money(hardRoom);
-      $("lHard").className = "v " + (hardRoom >= 0 ? "under" : "over");
-      let note;
-      if (over <= 0) note = "You're under the soft cap, so you'd owe no tax and could bid normally in the free agent draft.";
-      else if (hardRoom < 0) note = "You'd be " + money(-hardRoom) + " over the $" + L.hardCap + " hard cap, which isn't allowed even with the tax. You'd still need to cut players or move them to taxi.";
-      else {
-        const first = Math.min(over, L.tiers[0].upTo), rest = over - first;
-        note = "You'd pay " + money(tax) + " into the pot (" + money(first) + " × $1" + (rest > 0 ? " + " + money(rest) + " × $2" : "") +
-          ") and could only bid $" + L.draftBidLimit + " per player in the free agent draft. Tax is checked after the draft and at the trade deadline, so this can change.";
-      }
-      $("lNote").textContent = note + (n ? " Includes your what-if statuses." : "");
-    }
+
+    // Live buy-in tracker
+    const bc = buyInCents(Math.min(s.hit, hard), B), diff = bc - B.baseCents;
+    $("lux").className = "lux zone-" + zone;
+    $("lZone").textContent = zone === "under" ? "Under $210" : zone === "tax" ? "Luxury tax zone" : "Over the hard cap";
+    $("lBuy").textContent = zone === "over" ? "Not allowed" : cash(bc);
+    $("lDiff").textContent = zone === "over" ? "—" : diff === 0 ? "$0" : (diff > 0 ? "+" : "") + cash(diff);
+    $("lDiff").className = "v " + (diff > 0 ? "tax" : "under");
+    $("lPay").textContent = money(s.hit);
+    let note;
+    if (zone === "over") note = "You're " + money(-hardRoom) + " over the $" + hard + " hard cap. Cut players or move them to taxi to get under it.";
+    else if (zone === "tax") {
+      const a = Math.min(s.hit, 220) - 210, b2 = Math.max(0, s.hit - 220);
+      note = "You're " + money(-s.room) + " over $210: " + money(a) + " × $0.50" + (b2 ? " + " + money(b2) + " × $1" : "") + " = " + cash(diff) + " in luxury tax on top of the $50 buy-in.";
+    } else if (s.room > 0) note = "You're " + money(s.room) + " under $210, which takes " + cash(-diff) + " off your buy-in. Money you spend in the free agent draft raises your payroll and your buy-in.";
+    else note = "You're exactly at $210, so your buy-in is the $50 base.";
+    $("lNote").textContent = note + " Final buy-in is set by your payroll after the draft and at the trade deadline." + (n ? " Includes your what-if statuses." : "");
+    const rung = zone === "over" ? 4 : s.hit > 220 ? 3 : s.hit > 210 ? 2 : s.hit === 210 ? 1 : 0;
+    [...$("lux").querySelectorAll(".ladder li")].forEach((li, i) => li.classList.toggle("on", i === rung));
     $("whatif").hidden = !n;
     if (n) $("whatifText").textContent = "What-if: previewing " + n + " status change" + (n > 1 ? "s" : "") +
-      ". With official statuses you'd keep " + money(off.hit) + " (" + (off.room >= 0 ? money(off.room) + " under" : money(-off.room) + " over") + " the cap). Submitting always uses official statuses.";
+      ". With official statuses your payroll would be " + money(off.hit) + " (buy-in " + (offHardRoom >= 0 ? cash(buyInCents(off.hit, B)) : "over the hard cap") + "). Submitting always uses official statuses.";
 
     $("rows").replaceChildren(...t.players.map(p => {
       const tr = document.createElement("tr");
@@ -150,11 +148,13 @@
       return tr;
     }));
 
-    $("submit").disabled = locked || saving || off.room < 0;
+    const offOk = offHardRoom >= 0 && offHardRoom >= off.spots;
+    $("submit").disabled = locked || saving || !offOk;
     $("reset").disabled = locked || saving;
     if (!saving) {
       if (locked) setMsg("The deadline has passed. Your picks are locked.", data.submission ? "ok" : "err");
-      else if (off.room < 0) setMsg("With official statuses you're " + money(-off.room) + " over the cap. Cut players or move them to taxi before you submit.", "err");
+      else if (offHardRoom < 0) setMsg("With official statuses you're " + money(-offHardRoom) + " over the $" + hard + " hard cap. Cut players or move them to taxi before you submit.", "err");
+      else if (offHardRoom < off.spots) setMsg("You need $1 under the hard cap for each of your " + off.spots + " open roster spots. Free up " + money(off.spots - offHardRoom) + " more.", "err");
       else if (data.submission && !dirty) setMsg("Submitted " + fmtTime(data.submission.submittedAt) + ". You can change picks and submit again.", "ok");
       else if (data.submission) setMsg("You have unsaved changes. Submit again to replace your earlier picks.");
       else setMsg("Not submitted yet.");
@@ -197,7 +197,6 @@
     } catch (e) { banner("Couldn't reach the server. Check your connection and reload.", true); }
   }
 
-  $("luxOn").onchange = e => { luxOn = e.target.checked; try { localStorage.setItem("cod-lux", luxOn ? "1" : "0"); } catch (x) {} render(); };
   $("resetWhatIf").onclick = () => { whatIf = {}; render(); };
   $("reset").onclick = () => { choice = startingChoices(null); dirty = true; render(); };
   $("submit").onclick = async () => {

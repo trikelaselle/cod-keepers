@@ -2,7 +2,7 @@
 // GET  /api/admin                         -> all teams, private links, submissions
 // POST /api/admin { action: "reveal", value: true|false }   -> show/hide everyone's picks
 // POST /api/admin { action: "clear", team: "<key>" }        -> delete one team's submission
-import { TEAMS, CAP, tokenFor, isAdmin, adminPassword, deadline, isLocked, send, fail } from "../lib/league.js";
+import { TEAMS, CAP, HARD_CAP, buyInCents, tokenFor, isAdmin, adminPassword, deadline, isLocked, send, fail } from "../lib/league.js";
 import { getJSON, setJSON, mgetJSON, del } from "../lib/store.js";
 
 export default async function handler(req, res) {
@@ -12,12 +12,14 @@ export default async function handler(req, res) {
     if (req.method === "GET") {
       const [settings, subs] = await Promise.all([getJSON("settings"), mgetJSON(TEAMS.map(t => "sub:" + t.key))]);
       return send(res, 200, {
-        cap: CAP, deadline: deadline(), locked: isLocked(),
+        cap: CAP, hardCap: HARD_CAP, deadline: deadline(), locked: isLocked(),
         revealed: !!(settings && settings.revealed),
         teams: TEAMS.map((t, i) => ({
           key: t.key, team: t.team, manager: t.manager,
           link: "/t/" + tokenFor(t.key),
           fullHit: t.players.reduce((s, p) => s + p.hit, 0),
+          fullBuyInCents: buyInCents(t.players.reduce((s, p) => s + p.hit, 0)),
+          buyInCents: subs[i] ? buyInCents(subs[i].capHit) : null,
           players: t.players,
           submission: subs[i],
         })),
