@@ -3,6 +3,7 @@
   const money = n => (n < 0 ? "-$" : "$") + Math.abs(n);
   const token = (location.pathname.match(/\/t\/([a-f0-9]+)/) || [])[1] || "";
   let data = null, choice = {}, dirty = false, saving = false;
+  let whatIf = {}; // player id -> previewed slot ("Active" or "IR"); planning only, never submitted
 
   const fmtTime = iso => {
     try { return new Date(iso).toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
@@ -11,15 +12,26 @@
   const banner = (text, err) => { const b = $("banner"); b.textContent = text; b.className = "banner" + (err ? " err" : ""); b.hidden = !text; };
   const setMsg = (text, kind) => { $("msg").textContent = text; $("msg").className = "msg" + (kind ? " " + kind : ""); };
 
-  function totals() {
+  // Injured players (and anyone on IR) can be previewed on IR or active.
+  const canFlip = p => p.slot !== "Taxi" && (!!p.injury || p.slot === "IR");
+  const slotOf = (p, preview) => (preview && whatIf[p.id]) || p.slot;
+  const hitFor = (p, slot) => slot === "Taxi" ? 0 : slot === "IR" ? Math.ceil(p.s2 / 2) : p.s2;
+  const previewCount = () => Object.keys(whatIf).length;
+
+  function totals(preview = true) {
     const kept = data.team.players.filter(p => choice[p.id] === "keep");
-    const hit = kept.reduce((s, p) => s + p.hit, 0);
-    const spots = Math.max(0, data.activeSpots - kept.filter(p => p.slot === "Active").length);
+    const hit = kept.reduce((s, p) => s + hitFor(p, slotOf(p, preview)), 0);
+    const spots = Math.max(0, data.activeSpots - kept.filter(p => slotOf(p, preview) === "Active").length);
     return { hit, room: data.cap - hit, spots };
+  }
+  function flip(p) {
+    const next = slotOf(p, true) === "IR" ? "Active" : "IR";
+    if (next === p.slot) delete whatIf[p.id]; else whatIf[p.id] = next;
+    render();
   }
 
   function render() {
-    const t = data.team, s = totals(), locked = data.locked;
+    const t = data.team, s = totals(true), off = totals(false), locked = data.locked, n = previewCount();
     $("tname").textContent = t.team;
     $("tmgr").textContent = "Manager: " + t.manager + " · " + t.players.length + " players";
     $("sHit").textContent = money(s.hit);
@@ -27,13 +39,16 @@
     $("sRoom").className = "v " + (s.room >= 0 ? "under" : "over");
     $("sBudget").textContent = money(Math.max(0, s.room));
     $("sSpots").textContent = s.spots;
-    const full = t.players.reduce((a, p) => a + p.hit, 0);
+    const full = t.players.reduce((a, p) => a + hitFor(p, slotOf(p, true)), 0);
     const scale = Math.max(full, data.cap) * 1.05;
     $("mFill").style.width = (s.hit / scale * 100) + "%";
     $("mFill").className = "fill" + (s.room < 0 ? " over" : "");
     $("mCap").style.left = (data.cap / scale * 100) + "%";
     $("mCapLbl").textContent = "Cap $" + data.cap;
     $("mMax").textContent = "Full roster " + money(full);
+    $("whatif").hidden = !n;
+    if (n) $("whatifText").textContent = "What-if: previewing " + n + " status change" + (n > 1 ? "s" : "") +
+      ". With official statuses you'd keep " + money(off.hit) + " (" + (off.room >= 0 ? money(off.room) + " under" : money(-off.room) + " over") + " the cap). Submitting always uses official statuses.";
 
     $("rows").replaceChildren(...t.players.map(p => {
       const tr = document.createElement("tr");
@@ -46,8 +61,17 @@
       h.append(ps, document.createTextNode(p.how));
       if (p.injury) { const inj = document.createElement("span"); inj.className = "inj"; inj.textContent = " · " + p.injury; h.append(inj); }
       nm.append(a, h);
-      const sl = document.createElement("td"); const ch = document.createElement("span");
-      ch.className = "chip " + p.slot; ch.textContent = p.slot; sl.append(ch);
+      const sl = document.createElement("td"); const cur = slotOf(p, true);
+      let ch;
+      if (canFlip(p)) {
+        ch = document.createElement("button"); ch.type = "button";
+        ch.className = "chip toggle " + cur + (whatIf[p.id] ? " preview" : "");
+        ch.textContent = cur + " ⇄";
+        ch.title = "Preview " + p.name + " as " + (cur === "IR" ? "Active" : "IR");
+        ch.setAttribute("aria-label", p.name + " is " + cur + (whatIf[p.id] ? " (what-if)" : "") + ". Switch to preview him as " + (cur === "IR" ? "Active" : "IR") + ".");
+        ch.onclick = () => flip(p);
+      } else { ch = document.createElement("span"); ch.className = "chip " + cur; ch.textContent = cur; }
+      sl.append(ch);
       const act = document.createElement("td"); act.className = "act";
       const seg = document.createElement("div"); seg.className = "seg"; seg.setAttribute("role", "group");
       seg.setAttribute("aria-label", "Decision for " + p.name);
@@ -58,15 +82,15 @@
         seg.append(b);
       }
       act.append(seg);
-      tr.append(nm, td(p.pos, "hide-sm"), sl, td("$" + p.y1, "n hide-sm"), td("$" + p.s2, "n"), td("$" + p.hit, "n"), act);
+      tr.append(nm, td(p.pos, "hide-sm"), sl, td("$" + p.y1, "n hide-sm"), td("$" + p.s2, "n"), td("$" + hitFor(p, cur), "n" + (whatIf[p.id] ? " previewed" : "")), act);
       return tr;
     }));
 
-    $("submit").disabled = locked || saving || s.room < 0;
+    $("submit").disabled = locked || saving || off.room < 0;
     $("reset").disabled = locked || saving;
     if (!saving) {
       if (locked) setMsg("The deadline has passed. Your picks are locked.", data.submission ? "ok" : "err");
-      else if (s.room < 0) setMsg("You're " + money(-s.room) + " over the cap. Cut more players before you submit.", "err");
+      else if (off.room < 0) setMsg("With official statuses you're " + money(-off.room) + " over the cap. Cut more players before you submit.", "err");
       else if (data.submission && !dirty) setMsg("Submitted " + fmtTime(data.submission.submittedAt) + ". You can change picks and submit again.", "ok");
       else if (data.submission) setMsg("You have unsaved changes. Submit again to replace your earlier picks.");
       else setMsg("Not submitted yet.");
@@ -110,6 +134,7 @@
     } catch (e) { banner("Couldn't reach the server. Check your connection and reload.", true); }
   }
 
+  $("resetWhatIf").onclick = () => { whatIf = {}; render(); };
   $("reset").onclick = () => { data.team.players.forEach(p => choice[p.id] = "keep"); dirty = true; render(); };
   $("submit").onclick = async () => {
     saving = true; render(); setMsg("Saving…");
