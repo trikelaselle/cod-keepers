@@ -75,6 +75,7 @@
       const ps = document.createElement("span"); ps.className = "show-sm"; ps.textContent = p.pos + " · ";
       h.append(ps, document.createTextNode(p.how));
       if (p.injury) { const inj = document.createElement("span"); inj.className = "inj"; inj.textContent = " · " + p.injury; h.append(inj); }
+      if (p.taxiOk && p.slot !== "Taxi") { const te = document.createElement("span"); te.className = "taxiok"; te.textContent = " · Taxi-eligible"; h.append(te); }
       if (p.slot === "Taxi" && c === "keep") { const up = document.createElement("span"); up.className = "callup"; up.textContent = " · Called up from taxi"; h.append(up); }
       nm.append(a, h);
 
@@ -96,9 +97,11 @@
       for (const [val, lbl, cls] of [["keep", "Keep", "k"], ["taxi", "Taxi", "x"], ["cut", "Cut", "c"]]) {
         const b = document.createElement("button"); b.type = "button"; b.className = cls; b.textContent = lbl;
         b.setAttribute("aria-pressed", String(c === val));
+        const ineligible = val === "taxi" && !p.taxiOk;
         const blocked = val === "taxi" && c !== "taxi" && taxiFull;
-        b.disabled = locked || blocked;
-        if (blocked) b.title = "Your taxi squad is full (" + data.taxiSpots + " players).";
+        b.disabled = locked || blocked || ineligible;
+        if (ineligible) b.title = "Only players in their first two NBA seasons can go on taxi.";
+        else if (blocked) b.title = "Your taxi squad is full (" + data.taxiSpots + " players).";
         b.onclick = () => { choice[p.id] = val; if (val === "taxi") delete whatIf[p.id]; dirty = true; render(); };
         seg.append(b);
       }

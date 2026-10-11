@@ -61,6 +61,7 @@ tr.is-cut .pname{text-decoration:line-through}
 .seg button.x[aria-pressed="true"]{background:var(--chip);color:var(--ink)}
 .seg button:disabled:not([aria-pressed="true"]){opacity:.4}
 .callup{color:var(--keep);font-weight:500}
+.taxiok{color:var(--muted);font-style:italic}
 .seg button:disabled{cursor:not-allowed}
 .foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 18px;border-top:1px solid var(--line)}
 .btn{font:600 14px var(--body);padding:9px 16px;border-radius:5px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;text-decoration:none;display:inline-block}

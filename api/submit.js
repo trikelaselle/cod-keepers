@@ -17,6 +17,8 @@ export default async function handler(req, res) {
     const taxi = Array.isArray(body.taxi) ? [...new Set(body.taxi.map(String))] : [];
     if (!cut || cut.some(id => !ids.has(id)) || taxi.some(id => !ids.has(id) || cut.includes(id)))
       return send(res, 400, { error: "Those picks don't match your roster. Reload the page and try again." });
+    const notOk = taxi.map(id => team.players.find(p => p.id === id)).filter(p => !p.taxiOk);
+    if (notOk.length) return send(res, 400, { error: `${notOk.map(p => p.name).join(", ")} can't go on taxi. Only players in their first two NBA seasons are eligible.` });
     if (taxi.length > TAXI_SPOTS) return send(res, 400, { error: `You can have at most ${TAXI_SPOTS} players on your taxi squad.` });
 
     const r = evaluate(team, cut, taxi);
