@@ -2,7 +2,9 @@
 
 Keeper decisions for the Chode of Destiny league's Season 2 offseason.
 
-- Every team gets a **private link** that shows only its own roster. Managers mark each player Keep or Cut, see their cap room and draft budget update live, and submit.
+- Every team gets a **private link** that shows only its own roster. Managers mark each player Keep, Taxi or Cut, see their cap room and draft budget update live, and submit.
+- **Taxi squad:** up to 4 players per team (any player). A taxi player gets no raise and counts $0 against the cap. Marking a current taxi player Keep calls him up. The charter's 2-season limit and the rule against returning to taxi after a call-up aren't tracked by the site, so check those yourself.
+- **What-if statuses:** managers can preview an injured player on IR or active. This is only for planning. Submissions use official statuses.
 - The server checks the cap again on every submission. It refuses a team that's over the $210 cap, and it refuses everyone after the deadline if you set one.
 - Managers see which teams have submitted, but not what they picked, until you reveal the picks.
 - The **commissioner desk** at `/admin` shows every submission, has a copy button for each team's link, downloads all picks as a CSV, and reveals or hides picks for the whole league.

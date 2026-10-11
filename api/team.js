@@ -1,6 +1,6 @@
 // GET /api/team?token=...  -> this team's roster and submission, plus league status.
 // Other teams' picks are only included once the commissioner reveals them.
-import { TEAMS, CAP, ACTIVE_SPOTS, teamFromToken, deadline, isLocked, send, fail, brief } from "../lib/league.js";
+import { TEAMS, CAP, ACTIVE_SPOTS, TAXI_SPOTS, teamFromToken, deadline, isLocked, send, fail, brief } from "../lib/league.js";
 import { getJSON, mgetJSON } from "../lib/store.js";
 
 export default async function handler(req, res) {
@@ -23,6 +23,7 @@ export default async function handler(req, res) {
         row.capHit = s.capHit;
         row.kept = s.keep.map(id => byId[id]).filter(Boolean).map(brief);
         row.cut = s.cut.map(id => byId[id]).filter(Boolean).map(brief);
+        row.taxi = (s.taxi || []).map(id => byId[id]).filter(Boolean).map(brief);
       }
       return row;
     });
@@ -30,7 +31,7 @@ export default async function handler(req, res) {
     send(res, 200, {
       team: { team: team.team, manager: team.manager, players: team.players },
       submission: subs[TEAMS.indexOf(team)],
-      cap: CAP, activeSpots: ACTIVE_SPOTS,
+      cap: CAP, activeSpots: ACTIVE_SPOTS, taxiSpots: TAXI_SPOTS,
       deadline: deadline(), locked: isLocked(),
       revealed, league,
     });

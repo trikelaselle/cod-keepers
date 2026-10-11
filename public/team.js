@@ -12,26 +12,39 @@
   const banner = (text, err) => { const b = $("banner"); b.textContent = text; b.className = "banner" + (err ? " err" : ""); b.hidden = !text; };
   const setMsg = (text, kind) => { $("msg").textContent = text; $("msg").className = "msg" + (kind ? " " + kind : ""); };
 
-  // Injured players (and anyone on IR) can be previewed on IR or active.
-  const canFlip = p => p.slot !== "Taxi" && (!!p.injury || p.slot === "IR");
-  const slotOf = (p, preview) => (preview && whatIf[p.id]) || p.slot;
-  const hitFor = (p, slot) => slot === "Taxi" ? 0 : slot === "IR" ? Math.ceil(p.s2 / 2) : p.s2;
-  const previewCount = () => Object.keys(whatIf).length;
+  // Slots: a player marked Taxi is on the taxi squad (no raise, $0 cap hit). A player who was
+  // on taxi and is now marked Keep is being called up to the active roster.
+  const baseSlot = p => (p.slot === "Taxi" ? "Active" : p.slot);
+  const canFlip = p => choice[p.id] !== "taxi" && (!!p.injury || p.slot === "IR");
+  const slotOf = (p, preview) => {
+    if (choice[p.id] === "taxi") return "Taxi";
+    return (preview && whatIf[p.id]) || baseSlot(p);
+  };
+  const salaryOf = (p, slot) => (slot === "Taxi" ? p.y1 : p.s2);
+  const hitFor = (p, slot) => (slot === "Taxi" ? 0 : slot === "IR" ? Math.ceil(p.s2 / 2) : p.s2);
+  const taxiCount = () => data.team.players.filter(p => choice[p.id] === "taxi").length;
+  const previewCount = () => Object.keys(whatIf).filter(id => choice[id] !== "taxi").length;
 
   function totals(preview = true) {
-    const kept = data.team.players.filter(p => choice[p.id] === "keep");
+    const kept = data.team.players.filter(p => choice[p.id] !== "cut");
     const hit = kept.reduce((s, p) => s + hitFor(p, slotOf(p, preview)), 0);
     const spots = Math.max(0, data.activeSpots - kept.filter(p => slotOf(p, preview) === "Active").length);
     return { hit, room: data.cap - hit, spots };
   }
   function flip(p) {
     const next = slotOf(p, true) === "IR" ? "Active" : "IR";
-    if (next === p.slot) delete whatIf[p.id]; else whatIf[p.id] = next;
+    if (next === baseSlot(p)) delete whatIf[p.id]; else whatIf[p.id] = next;
     render();
+  }
+  function startingChoices(sub) {
+    const cut = new Set(sub ? sub.cut : []);
+    const taxi = new Set(sub && sub.taxi ? sub.taxi : data.team.players.filter(p => p.slot === "Taxi" && !cut.has(p.id)).map(p => p.id));
+    return Object.fromEntries(data.team.players.map(p => [p.id, cut.has(p.id) ? "cut" : taxi.has(p.id) ? "taxi" : "keep"]));
   }
 
   function render() {
     const t = data.team, s = totals(true), off = totals(false), locked = data.locked, n = previewCount();
+    const taxiUsed = taxiCount(), taxiFull = taxiUsed >= data.taxiSpots;
     $("tname").textContent = t.team;
     $("tmgr").textContent = "Manager: " + t.manager + " · " + t.players.length + " players";
     $("sHit").textContent = money(s.hit);
@@ -39,20 +52,22 @@
     $("sRoom").className = "v " + (s.room >= 0 ? "under" : "over");
     $("sBudget").textContent = money(Math.max(0, s.room));
     $("sSpots").textContent = s.spots;
+    $("sTaxi").textContent = taxiUsed + " of " + data.taxiSpots;
     const full = t.players.reduce((a, p) => a + hitFor(p, slotOf(p, true)), 0);
     const scale = Math.max(full, data.cap) * 1.05;
     $("mFill").style.width = (s.hit / scale * 100) + "%";
     $("mFill").className = "fill" + (s.room < 0 ? " over" : "");
     $("mCap").style.left = (data.cap / scale * 100) + "%";
     $("mCapLbl").textContent = "Cap $" + data.cap;
-    $("mMax").textContent = "Full roster " + money(full);
+    $("mMax").textContent = "Whole roster " + money(full);
     $("whatif").hidden = !n;
     if (n) $("whatifText").textContent = "What-if: previewing " + n + " status change" + (n > 1 ? "s" : "") +
       ". With official statuses you'd keep " + money(off.hit) + " (" + (off.room >= 0 ? money(off.room) + " under" : money(-off.room) + " over") + " the cap). Submitting always uses official statuses.";
 
     $("rows").replaceChildren(...t.players.map(p => {
       const tr = document.createElement("tr");
-      if (choice[p.id] === "cut") tr.className = "is-cut";
+      const c = choice[p.id];
+      if (c === "cut") tr.className = "is-cut";
       const td = (txt, cls) => { const e = document.createElement("td"); if (cls) e.className = cls; e.textContent = txt; return e; };
       const nm = document.createElement("td");
       const a = document.createElement("span"); a.className = "pname"; a.textContent = p.name;
@@ -60,7 +75,9 @@
       const ps = document.createElement("span"); ps.className = "show-sm"; ps.textContent = p.pos + " · ";
       h.append(ps, document.createTextNode(p.how));
       if (p.injury) { const inj = document.createElement("span"); inj.className = "inj"; inj.textContent = " · " + p.injury; h.append(inj); }
+      if (p.slot === "Taxi" && c === "keep") { const up = document.createElement("span"); up.className = "callup"; up.textContent = " · Called up from taxi"; h.append(up); }
       nm.append(a, h);
+
       const sl = document.createElement("td"); const cur = slotOf(p, true);
       let ch;
       if (canFlip(p)) {
@@ -72,17 +89,24 @@
         ch.onclick = () => flip(p);
       } else { ch = document.createElement("span"); ch.className = "chip " + cur; ch.textContent = cur; }
       sl.append(ch);
+
       const act = document.createElement("td"); act.className = "act";
       const seg = document.createElement("div"); seg.className = "seg"; seg.setAttribute("role", "group");
       seg.setAttribute("aria-label", "Decision for " + p.name);
-      for (const [val, lbl, cls] of [["keep", "Keep", "k"], ["cut", "Cut", "c"]]) {
+      for (const [val, lbl, cls] of [["keep", "Keep", "k"], ["taxi", "Taxi", "x"], ["cut", "Cut", "c"]]) {
         const b = document.createElement("button"); b.type = "button"; b.className = cls; b.textContent = lbl;
-        b.setAttribute("aria-pressed", String(choice[p.id] === val)); b.disabled = locked;
-        b.onclick = () => { choice[p.id] = val; dirty = true; render(); };
+        b.setAttribute("aria-pressed", String(c === val));
+        const blocked = val === "taxi" && c !== "taxi" && taxiFull;
+        b.disabled = locked || blocked;
+        if (blocked) b.title = "Your taxi squad is full (" + data.taxiSpots + " players).";
+        b.onclick = () => { choice[p.id] = val; if (val === "taxi") delete whatIf[p.id]; dirty = true; render(); };
         seg.append(b);
       }
       act.append(seg);
-      tr.append(nm, td(p.pos, "hide-sm"), sl, td("$" + p.y1, "n hide-sm"), td("$" + p.s2, "n"), td("$" + hitFor(p, cur), "n" + (whatIf[p.id] ? " previewed" : "")), act);
+      const sal = salaryOf(p, cur);
+      tr.append(nm, td(p.pos, "hide-sm"), sl, td("$" + p.y1, "n hide-sm"),
+        td("$" + sal, "n"),
+        td("$" + hitFor(p, cur), "n" + (whatIf[p.id] && c !== "taxi" ? " previewed" : "")), act);
       return tr;
     }));
 
@@ -90,7 +114,7 @@
     $("reset").disabled = locked || saving;
     if (!saving) {
       if (locked) setMsg("The deadline has passed. Your picks are locked.", data.submission ? "ok" : "err");
-      else if (off.room < 0) setMsg("With official statuses you're " + money(-off.room) + " over the cap. Cut more players before you submit.", "err");
+      else if (off.room < 0) setMsg("With official statuses you're " + money(-off.room) + " over the cap. Cut players or move them to taxi before you submit.", "err");
       else if (data.submission && !dirty) setMsg("Submitted " + fmtTime(data.submission.submittedAt) + ". You can change picks and submit again.", "ok");
       else if (data.submission) setMsg("You have unsaved changes. Submit again to replace your earlier picks.");
       else setMsg("Not submitted yet.");
@@ -111,10 +135,10 @@
     $("revealSec").hidden = !shown.length;
     $("reveal").replaceChildren(...shown.map(r => {
       const box = document.createElement("div"); box.className = "reveal-team";
-      const h = document.createElement("strong"); h.textContent = r.team + " · keeps " + money(r.capHit);
-      const cutP = document.createElement("div"); cutP.className = "mgr";
-      cutP.textContent = r.cut.length ? "Cut: " + r.cut.map(p => p.name + " ($" + p.s2 + ")").join(", ") : "Cut: nobody";
-      box.append(h, cutP); return box;
+      const h = document.createElement("strong"); h.textContent = r.team + " · cap hit " + money(r.capHit);
+      const list = (label, ps, sal) => { const d = document.createElement("div"); d.className = "mgr";
+        d.textContent = label + ": " + (ps && ps.length ? ps.map(p => p.name + " ($" + sal(p) + ")").join(", ") : "nobody"); return d; };
+      box.append(h, list("Cut", r.cut, p => p.s2), list("Taxi", r.taxi, p => p.y1)); return box;
     }));
   }
 
@@ -125,8 +149,7 @@
       const j = await r.json();
       if (!r.ok) { banner(j.error || "Couldn't load your team.", true); return; }
       data = j;
-      const cut = new Set(j.submission ? j.submission.cut : []);
-      choice = Object.fromEntries(j.team.players.map(p => [p.id, cut.has(p.id) ? "cut" : "keep"]));
+      choice = startingChoices(j.submission);
       document.title = j.team.team + " · CoD Keepers";
       if (j.deadline) $("lede").textContent += " Deadline: " + fmtTime(j.deadline) + ".";
       $("sheet").hidden = false;
@@ -135,12 +158,13 @@
   }
 
   $("resetWhatIf").onclick = () => { whatIf = {}; render(); };
-  $("reset").onclick = () => { data.team.players.forEach(p => choice[p.id] = "keep"); dirty = true; render(); };
+  $("reset").onclick = () => { choice = startingChoices(null); dirty = true; render(); };
   $("submit").onclick = async () => {
     saving = true; render(); setMsg("Saving…");
     try {
       const cut = data.team.players.filter(p => choice[p.id] === "cut").map(p => p.id);
-      const r = await fetch("/api/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, cut }) });
+      const taxi = data.team.players.filter(p => choice[p.id] === "taxi").map(p => p.id);
+      const r = await fetch("/api/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, cut, taxi }) });
       const j = await r.json();
       saving = false;
       if (!r.ok) { render(); setMsg(j.error || "Couldn't save your picks.", "err"); return; }

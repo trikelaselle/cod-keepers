@@ -15,7 +15,7 @@
   <header>
     <div class="eyebrow">Chode of Destiny · Season 2 offseason</div>
     <h1>Keeper <span>decisions</span></h1>
-    <p class="lede" id="lede">Mark each player Keep or Cut, then submit. Salaries already include the Season 2 raise from the league charter. You need to be under the $210 cap to submit.</p>
+    <p class="lede" id="lede">Mark each player Keep, Taxi or Cut, then submit. Salaries already include the Season 2 raise from the league charter. You need to be under the $210 cap to submit.</p>
   </header>
 
   <div class="banner" id="banner" hidden></div>
@@ -31,6 +31,7 @@
         <div class="stat"><span class="k">Room vs cap</span><span class="v" id="sRoom"></span></div>
         <div class="stat"><span class="k">Draft budget</span><span class="v" id="sBudget"></span></div>
         <div class="stat"><span class="k">Spots to fill</span><span class="v" id="sSpots"></span></div>
+        <div class="stat"><span class="k">Taxi squad</span><span class="v" id="sTaxi"></span></div>
       </div>
       <div>
         <div class="meter" aria-hidden="true"><div class="fill" id="mFill"></div><div class="cap" id="mCap"></div></div>
@@ -52,7 +53,7 @@
     </div>
     <div class="foot">
       <button class="btn primary" id="submit" type="button">Submit decisions</button>
-      <button class="btn" id="reset" type="button">Keep everyone</button>
+      <button class="btn" id="reset" type="button">Start over</button>
       <span class="msg" id="msg" role="status"></span>
     </div>
   </section>
@@ -70,6 +71,7 @@
 
   <section class="rules">
     <p><strong>How the numbers work.</strong> Season 2 salary is last season's salary plus a 10% raise (at least $1), rounded up. Cap hit counts IR players at half their salary (rounded up) and taxi players at $0. A player is on IR only if Sleeper lists him as Out as of October 10; anyone healthy or day-to-day counts in full.</p>
+    <p><strong>Taxi squad.</strong> You can put up to 4 players on your taxi squad. A taxi player gets no raise and counts $0 against the cap, but he doesn't fill an active roster spot. Per the charter, a player can stay on taxi for at most 2 seasons, and once he's called up to the active roster he can't go back. Marking a current taxi player Keep calls him up.</p>
     <p><strong>What-if statuses.</strong> Tap the IR or Active tag on an injured player to preview your cap as if he were on IR or healthy. It's only for planning: your submission and the cap check always use the official statuses.</p>
     <p>Draft budget is the cap minus the cap hit of everyone you keep. You need $1 for each open roster spot. Spots to fill counts the 15-player active roster and doesn't include IR or taxi.</p>
     <p>Anyone you cut goes into the free agent auction, and you can bid on him there. You can change your picks and submit again until the deadline.</p>

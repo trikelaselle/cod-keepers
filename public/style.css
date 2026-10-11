@@ -29,7 +29,7 @@ a{color:var(--accent)}
 .sheet-head{padding:18px 18px 14px;display:grid;gap:14px;border-bottom:1px solid var(--line)}
 .title-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline}
 .mgr{color:var(--muted);font-size:13px}
-.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
 .stat{display:grid;gap:2px}
 .stat .k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .stat .v{font-family:var(--mono);font-weight:600;font-size:22px;font-variant-numeric:tabular-nums}
@@ -58,6 +58,9 @@ tr.is-cut .pname{text-decoration:line-through}
 .seg button{font:600 12px var(--body);padding:5px 11px;border:0;background:transparent;color:var(--muted);cursor:pointer}
 .seg button.k[aria-pressed="true"]{background:var(--keep-bg);color:var(--keep)}
 .seg button.c[aria-pressed="true"]{background:var(--cut-bg);color:var(--cut)}
+.seg button.x[aria-pressed="true"]{background:var(--chip);color:var(--ink)}
+.seg button:disabled:not([aria-pressed="true"]){opacity:.4}
+.callup{color:var(--keep);font-weight:500}
 .seg button:disabled{cursor:not-allowed}
 .foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 18px;border-top:1px solid var(--line)}
 .btn{font:600 14px var(--body);padding:9px 16px;border-radius:5px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;text-decoration:none;display:inline-block}

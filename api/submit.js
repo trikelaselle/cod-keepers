@@ -1,7 +1,7 @@
 // POST /api/submit  { token, cut: [playerId, ...] }
 // Saves a team's keeper decisions. The server recomputes the cap and refuses
 // submissions that are over the cap or after the deadline.
-import { teamFromToken, evaluate, isLocked, CAP, send, fail } from "../lib/league.js";
+import { teamFromToken, evaluate, isLocked, CAP, TAXI_SPOTS, send, fail } from "../lib/league.js";
 import { setJSON } from "../lib/store.js";
 
 export default async function handler(req, res) {
@@ -14,13 +14,16 @@ export default async function handler(req, res) {
 
     const ids = new Set(team.players.map(p => p.id));
     const cut = Array.isArray(body.cut) ? [...new Set(body.cut.map(String))] : null;
-    if (!cut || cut.some(id => !ids.has(id))) return send(res, 400, { error: "Those picks don't match your roster. Reload the page and try again." });
+    const taxi = Array.isArray(body.taxi) ? [...new Set(body.taxi.map(String))] : [];
+    if (!cut || cut.some(id => !ids.has(id)) || taxi.some(id => !ids.has(id) || cut.includes(id)))
+      return send(res, 400, { error: "Those picks don't match your roster. Reload the page and try again." });
+    if (taxi.length > TAXI_SPOTS) return send(res, 400, { error: `You can have at most ${TAXI_SPOTS} players on your taxi squad.` });
 
-    const r = evaluate(team, cut);
-    if (r.room < 0) return send(res, 400, { error: `You're $${-r.room} over the $${CAP} cap. Cut more players before you submit.` });
+    const r = evaluate(team, cut, taxi);
+    if (r.room < 0) return send(res, 400, { error: `You're $${-r.room} over the $${CAP} cap. Cut players or move them to taxi before you submit.` });
 
     const submission = {
-      keep: r.kept.map(p => p.id), cut: r.cuts.map(p => p.id),
+      keep: r.kept.map(p => p.id), cut: r.cuts.map(p => p.id), taxi: r.onTaxi.map(p => p.id),
       capHit: r.capHit, budget: r.budget, spots: r.spots,
       submittedAt: new Date().toISOString(),
     };

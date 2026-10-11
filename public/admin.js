@@ -52,7 +52,9 @@
       chip.textContent = s ? "Submitted " + fmtTime(s.submittedAt) : "Waiting";
       st.append(chip);
       const byId = Object.fromEntries(t.players.map(p => [p.id, p]));
-      const cuts = s ? (s.cut.length ? s.cut.map(id => byId[id] ? byId[id].name + " ($" + byId[id].s2 + ")" : id).join(", ") : "None") : "—";
+      const names = (ids, sal) => ids.map(id => byId[id] ? byId[id].name + " ($" + sal(byId[id]) + ")" : id).join(", ");
+      const cuts = s ? "Cut: " + (s.cut.length ? names(s.cut, p => p.s2) : "none") +
+        ((s.taxi || []).length ? " · Taxi: " + names(s.taxi, p => p.y1) : "") : "—";
       const ln = document.createElement("td");
       const b = document.createElement("button"); b.type = "button"; b.className = "btn small"; b.textContent = "Copy link";
       b.onclick = () => copy(fullLink(t.link), "Copied " + t.team + "'s link.");
@@ -85,11 +87,14 @@
     catch (e) { msg("deskMsg", e.message, "err"); }
   };
   $("csv").onclick = () => {
-    const rows = [["Team", "Manager", "Player", "Pos", "Slot", "2025 Salary", "Season 2 Salary", "Cap Hit", "Decision", "Submitted At"]];
+    const rows = [["Team", "Manager", "Player", "Pos", "Slot (before)", "2025 Salary", "Season 2 Salary", "Cap Hit", "Decision", "Submitted At"]];
     for (const t of data.teams) {
-      const s = t.submission, cut = new Set(s ? s.cut : []);
-      for (const p of t.players) rows.push([t.team, t.manager, p.name, p.pos, p.slot, p.y1, p.s2, p.hit,
-        s ? (cut.has(p.id) ? "Cut" : "Keep") : "Not submitted", s ? s.submittedAt : ""]);
+      const s = t.submission, cut = new Set(s ? s.cut : []), taxi = new Set(s && s.taxi ? s.taxi : []);
+      for (const p of t.players) {
+        const dec = !s ? "Not submitted" : cut.has(p.id) ? "Cut" : taxi.has(p.id) ? "Taxi" : (p.slot === "Taxi" ? "Keep (called up)" : "Keep");
+        const sal = taxi.has(p.id) ? p.y1 : p.s2, hit = !s || cut.has(p.id) ? "" : taxi.has(p.id) ? 0 : (p.slot === "Taxi" ? p.s2 : p.hit);
+        rows.push([t.team, t.manager, p.name, p.pos, p.slot, p.y1, sal, hit, dec, s ? s.submittedAt : ""]);
+      }
     }
     const csv = rows.map(r => r.map(v => /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : v).join(",")).join("\n");
     const a = document.createElement("a");
