@@ -2,11 +2,11 @@
 // GET  /api/admin                         -> all teams, private links, submissions
 // POST /api/admin { action: "reveal", value: true|false }   -> show/hide everyone's picks
 // POST /api/admin { action: "clear", team: "<key>" }        -> delete one team's submission
-import { TEAMS, CAP, tokenFor, isAdmin, deadline, isLocked, send, fail } from "../lib/league.js";
+import { TEAMS, CAP, tokenFor, isAdmin, adminPassword, deadline, isLocked, send, fail } from "../lib/league.js";
 import { getJSON, setJSON, mgetJSON, del } from "../lib/store.js";
 
 export default async function handler(req, res) {
-  if (!process.env.ADMIN_PASSWORD) return send(res, 503, { error: "ADMIN_PASSWORD isn't set in Vercel yet." });
+  if (!adminPassword()) return send(res, 503, { error: "ADMIN_PASSWORD isn't set in Vercel yet." });
   if (!isAdmin(req)) return send(res, 401, { error: "Wrong password." });
   try {
     if (req.method === "GET") {
