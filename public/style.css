@@ -49,6 +49,7 @@ tr.is-cut td:not(.act){color:var(--muted)}
 tr.is-cut .pname{text-decoration:line-through}
 .pname{font-weight:600}
 .show-sm{display:none}
+.inj{color:var(--cut);font-weight:500}
 .how{display:block;font-size:12px;color:var(--muted)}
 .chip{display:inline-block;font:600 11px var(--mono);padding:2px 6px;border-radius:3px;background:var(--chip);color:var(--ink)}
 .chip.IR{background:var(--cut-bg);color:var(--cut)} .chip.Taxi{background:var(--keep-bg);color:var(--keep)}

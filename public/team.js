@@ -44,6 +44,7 @@
       const h = document.createElement("span"); h.className = "how";
       const ps = document.createElement("span"); ps.className = "show-sm"; ps.textContent = p.pos + " · ";
       h.append(ps, document.createTextNode(p.how));
+      if (p.injury) { const inj = document.createElement("span"); inj.className = "inj"; inj.textContent = " · " + p.injury; h.append(inj); }
       nm.append(a, h);
       const sl = document.createElement("td"); const ch = document.createElement("span");
       ch.className = "chip " + p.slot; ch.textContent = p.slot; sl.append(ch);
