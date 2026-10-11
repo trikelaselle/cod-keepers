@@ -4,6 +4,7 @@ Keeper decisions for the Chode of Destiny league's Season 2 offseason.
 
 - Every team gets a **private link** that shows only its own roster. Managers mark each player Keep, Taxi or Cut, see their cap room and draft budget update live, and submit.
 - **Taxi squad:** up to 4 players per team, limited to players in their first two NBA seasons (`taxiOk` in `lib/teams.js`; Collier and González are grandfathered). A taxi player gets no raise and counts $0 against the cap. Marking a current taxi player Keep calls him up. The charter's 2-season limit and the rule against returning to taxi after a call-up aren't tracked by the site, so check those yourself.
+- **Luxury tax preview:** a checkbox on the team page shows the proposed luxury tax ($231 hard cap, $1 per $1 for the first $10 over $210, then $2 per $1) against the team's current picks. It's only a preview; the rules live in `LUXURY_TAX` in `lib/league.js`, and submissions still have to be under $210.
 - **What-if statuses:** managers can preview an injured player on IR or active. This is only for planning. Submissions use official statuses.
 - The server checks the cap again on every submission. It refuses a team that's over the $210 cap, and it refuses everyone after the deadline if you set one.
 - Managers see which teams have submitted, but not what they picked, until you reveal the picks.

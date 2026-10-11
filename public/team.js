@@ -4,6 +4,18 @@
   const token = (location.pathname.match(/\/t\/([a-f0-9]+)/) || [])[1] || "";
   let data = null, choice = {}, dirty = false, saving = false;
   let whatIf = {}; // player id -> previewed slot ("Active" or "IR"); planning only, never submitted
+  let luxOn = false;
+  try { luxOn = localStorage.getItem("cod-lux") === "1"; } catch (e) {}
+  // Proposed luxury tax in real money: $1 per $1 over for the first $10, then $2 per $1 beyond.
+  function luxTax(over, tiers) {
+    let left = Math.max(0, over), tax = 0, prev = 0;
+    for (const t of tiers) {
+      const band = t.upTo == null ? left : Math.min(left, t.upTo - prev);
+      tax += band * t.rate; left -= band; prev = t.upTo ?? prev;
+      if (left <= 0) break;
+    }
+    return tax;
+  }
 
   const fmtTime = iso => {
     try { return new Date(iso).toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
@@ -54,12 +66,37 @@
     $("sSpots").textContent = s.spots;
     $("sTaxi").textContent = taxiUsed + " of " + data.taxiSpots;
     const full = t.players.reduce((a, p) => a + hitFor(p, slotOf(p, true)), 0);
-    const scale = Math.max(full, data.cap) * 1.05;
+    const L = data.luxuryTax, showLux = luxOn && !!L;
+    const scale = Math.max(full, data.cap, showLux ? L.hardCap : 0) * 1.05;
     $("mFill").style.width = (s.hit / scale * 100) + "%";
     $("mFill").className = "fill" + (s.room < 0 ? " over" : "");
     $("mCap").style.left = (data.cap / scale * 100) + "%";
     $("mCapLbl").textContent = "Cap $" + data.cap;
     $("mMax").textContent = "Whole roster " + money(full);
+    $("luxOn").checked = showLux;
+    $("mHard").hidden = $("mBand").hidden = $("lux").hidden = !showLux;
+    if (showLux) {
+      $("mHard").style.left = (L.hardCap / scale * 100) + "%";
+      $("mBand").style.left = (L.softCap / scale * 100) + "%";
+      $("mBand").style.width = ((L.hardCap - L.softCap) / scale * 100) + "%";
+      $("mCapLbl").textContent = "Soft cap $" + L.softCap + " · hard cap $" + L.hardCap;
+      const over = s.hit - L.softCap, tax = luxTax(over, L.tiers), hardRoom = L.hardCap - s.hit;
+      $("lPay").textContent = money(s.hit);
+      $("lOver").textContent = over > 0 ? money(over) : "—";
+      $("lTax").textContent = over > 0 ? money(tax) : "$0";
+      $("lTax").className = "v" + (over > 0 ? " over" : " under");
+      $("lHard").textContent = (hardRoom >= 0 ? "+" : "") + money(hardRoom);
+      $("lHard").className = "v " + (hardRoom >= 0 ? "under" : "over");
+      let note;
+      if (over <= 0) note = "You're under the soft cap, so you'd owe no tax and could bid normally in the free agent draft.";
+      else if (hardRoom < 0) note = "You'd be " + money(-hardRoom) + " over the $" + L.hardCap + " hard cap, which isn't allowed even with the tax. You'd still need to cut players or move them to taxi.";
+      else {
+        const first = Math.min(over, L.tiers[0].upTo), rest = over - first;
+        note = "You'd pay " + money(tax) + " into the pot (" + money(first) + " × $1" + (rest > 0 ? " + " + money(rest) + " × $2" : "") +
+          ") and could only bid $" + L.draftBidLimit + " per player in the free agent draft. Tax is checked after the draft and at the trade deadline, so this can change.";
+      }
+      $("lNote").textContent = note + (n ? " Includes your what-if statuses." : "");
+    }
     $("whatif").hidden = !n;
     if (n) $("whatifText").textContent = "What-if: previewing " + n + " status change" + (n > 1 ? "s" : "") +
       ". With official statuses you'd keep " + money(off.hit) + " (" + (off.room >= 0 ? money(off.room) + " under" : money(-off.room) + " over") + " the cap). Submitting always uses official statuses.";
@@ -160,6 +197,7 @@
     } catch (e) { banner("Couldn't reach the server. Check your connection and reload.", true); }
   }
 
+  $("luxOn").onchange = e => { luxOn = e.target.checked; try { localStorage.setItem("cod-lux", luxOn ? "1" : "0"); } catch (x) {} render(); };
   $("resetWhatIf").onclick = () => { whatIf = {}; render(); };
   $("reset").onclick = () => { choice = startingChoices(null); dirty = true; render(); };
   $("submit").onclick = async () => {

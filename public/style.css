@@ -38,6 +38,16 @@ a{color:var(--accent)}
 .meter .fill{position:absolute;inset:0 auto 0 0;background:var(--keep);border-radius:3px;transition:width .25s ease}
 .meter .fill.over{background:var(--cut)}
 .meter .cap{position:absolute;top:-5px;bottom:-5px;width:2px;background:var(--ink)}
+.meter .cap.hard{background:var(--cut)}
+.meter .band{position:absolute;top:0;bottom:0;z-index:1;background:repeating-linear-gradient(135deg,var(--panel) 0 3px,transparent 3px 9px);opacity:.6;border-left:0;pointer-events:none}
+.meter .cap{z-index:2}
+.luxtoggle{display:inline-flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);cursor:pointer;justify-self:start}
+.luxtoggle input{accent-color:var(--accent);width:16px;height:16px}
+.lux{border:1px dashed var(--line);border-radius:6px;padding:12px 14px;display:grid;gap:10px}
+.lux-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.lux-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.lux-note{margin:0;font-size:13px;color:var(--muted)}
+@media (max-width:640px){.lux-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .meter-lbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted)}
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
