@@ -1,6 +1,6 @@
 # CoD Keepers
 
-Keeper decisions for the Chode of Destiny league's Season 2 offseason.
+The Chode of Destiny league's private team site: keeper decisions for the Season 2 offseason (done), now Season 2 roster moves after the auction.
 
 - Every team gets a **private link** that shows only its own roster. Managers mark each player Keep, Taxi or Cut, see their cap room and draft budget update live, and submit.
 - **Taxi squad:** up to 4 players per team, limited to players in their first two NBA seasons (`taxiOk` in `lib/teams.js`; Collier and González are grandfathered). A taxi player gets no raise and counts $0 against the cap. Marking a current taxi player Keep calls him up. The charter's 2-season limit and the rule against returning to taxi after a call-up aren't tracked by the site, so check those yourself.
@@ -12,11 +12,18 @@ Keeper decisions for the Chode of Destiny league's Season 2 offseason.
 
 There's no framework and nothing to install. The site is static pages in `public/`, three Vercel functions in `api/`, and a free Upstash Redis database for the picks.
 
-## Rosters page
+## Season 2 roster moves (after the Oct 18 auction)
 
-`/rosters` shows every team's Season 2 roster after the Oct 18 auction: each Sleeper roster spot, Season 1 and Season 2 salaries, cap hits, the payroll-based buy-in and a league compliance board. On a team's page, managers can plan cuts and IR or taxi moves and copy the moves to send to the commissioner. Plans are saved only in the manager's own browser.
+Keeper decisions are finished, so each team's private link (`/t/<code>`) now opens that team's Season 2 roster instead. The manager marks each player Active, IR, Taxi or Cut, watches payroll, buy-in and compliance update, and submits. Only that team's link can change its moves.
 
-The page is one static file, `public/rosters.html`, with the roster data built in. It's a snapshot of Sleeper from Oct 19, 2026, so it doesn't update on its own. To refresh it, replace the data in that file and push.
+- **The server checks every submission** (`evaluateMoves` in `lib/league.js`) and refuses any that leave the roster out of compliance: more than 15 active, 3 IR or 4 taxi, over the $230 hard cap, a taxi player outside his first two NBA seasons, or an IR player Sleeper doesn't list as Out. Submissions are saved as `moves:<team>` in the database.
+- **Submitting doesn't change Sleeper.** The commissioner desk at `/admin` lists each team's submitted moves, payroll before and after, and buy-in, and downloads them all as a CSV. Make the moves in Sleeper, or check that managers did.
+- **`/rosters`** is a public, read-only league board: every team's roster by Sleeper slot, salaries, cap hits and compliance, plus which teams have submitted moves. It has no links and no planning.
+- Roster data is in `lib/rosters.js`, a snapshot of Sleeper from Oct 19, 2026. After teams make their moves in Sleeper, regenerate that file and push.
+- Optional `MOVES_DEADLINE` environment variable (for example `2026-10-22T20:00:00-04:00`) locks roster-move submissions. The old `DEADLINE` only applied to keeper picks.
+- **Keeper picks archive:** the keeper submissions (`sub:<team>`) and `lib/teams.js` are kept. Download them from the desk with "Keeper picks archive (CSV)".
+
+The setup below is unchanged.
 
 ## Set up on Vercel (about 10 minutes)
 

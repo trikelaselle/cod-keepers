@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
-<title>CoD Keepers · Commissioner</title>
+<title>CoD Commissioner Desk</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
@@ -14,7 +14,7 @@
 <div class="wrap">
   <header>
     <div class="eyebrow">Chode of Destiny · Commissioner</div>
-    <h1>Keeper <span>desk</span></h1>
+    <h1>Roster <span>desk</span></h1>
   </header>
 
   <form id="login" class="row" autocomplete="on">
@@ -33,8 +33,8 @@
         </div>
         <div class="row">
           <button class="btn" id="copyLinks" type="button">Copy all team links</button>
-          <button class="btn" id="csv" type="button">Download picks (CSV)</button>
-          <button class="btn" id="reveal" type="button"></button>
+          <button class="btn" id="csvMoves" type="button">Download roster moves (CSV)</button>
+          <button class="btn" id="csv" type="button">Keeper picks archive (CSV)</button>
           <button class="btn" id="refresh" type="button">Refresh</button>
           <span class="msg" id="deskMsg" role="status"></span>
         </div>
@@ -42,13 +42,13 @@
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Team</th><th>Status</th><th class="n">Payroll</th><th class="n">Buy-in</th><th>Cuts &amp; taxi</th><th>Private link</th><th></th>
+            <th>Team</th><th>Status</th><th class="n">Payroll</th><th class="n">Buy-in</th><th>Moves</th><th>Private link</th><th></th>
           </tr></thead>
           <tbody id="rows"></tbody>
         </table>
       </div>
     </div>
-    <p class="rules">Each link opens only that team's roster. Send each manager his own link privately. "Reveal picks" shows every submitted team's keeps and cuts to the whole league; you can hide them again. Buy-ins use each team's submitted payroll ($50 at $210, $0.25 off per $1 under, +$0.50 per $1 from $210 to $220, +$1 per $1 from $220 to $230); final buy-ins depend on payroll after the draft and at the trade deadline.</p>
+    <p class="rules">Each team's private link now opens its Season 2 roster, where the manager plans cuts and IR or taxi moves and submits them. The site only accepts moves that leave a roster compliant: 15 active, 3 IR, 4 taxi, at or under the $230 hard cap, and taxi and IR eligibility. Submitting doesn't change Sleeper, so make each team's moves in Sleeper (or check that they did). Payroll and buy-in show Sleeper now, then after the submitted moves. Buy-in: $50 at $210, $0.25 off per $1 under, +$0.50 per $1 from $210 to $220, +$1 per $1 from $220 to $230. The keeper picks from before the auction are still saved; download them from "Keeper picks archive".</p>
   </div>
 </div>
 <script src="/admin.js"></script>

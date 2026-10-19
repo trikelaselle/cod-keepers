@@ -9,306 +9,44 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
-<style>
-/* Layout: league compliance board up top; each team opens to a Sleeper-style slot sheet */
-:root{
-  --bg:#F3F5F8; --surface:#FFFFFF; --ink:#1B2230; --muted:#5D6779; --line:#DCE1E8; --soft:#EEF1F5;
-  --accent:#C9501C; --accent-soft:#FBE7DC;
-  --good:#23744A; --good-soft:#DDF1E5; --warn:#8A5A00; --warn-soft:#FBF0D6; --bad:#B42318; --bad-soft:#FDE3E0;
-  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
-  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#11151C; --surface:#1A1F28; --ink:#E6E9EF; --muted:#9AA3B3; --line:#2B323E; --soft:#222834;
-  --accent:#F07A45; --accent-soft:#3A2418;
-  --good:#5CC48A; --good-soft:#163323; --warn:#E8B85A; --warn-soft:#3A2E14; --bad:#F97066; --bad-soft:#3D1A17; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#11151C; --surface:#1A1F28; --ink:#E6E9EF; --muted:#9AA3B3; --line:#2B323E; --soft:#222834;
-  --accent:#F07A45; --accent-soft:#3A2418;
-  --good:#5CC48A; --good-soft:#163323; --warn:#E8B85A; --warn-soft:#3A2E14; --bad:#F97066; --bad-soft:#3D1A17; color-scheme:dark}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
-.wrap{max-width:1120px;margin:0 auto;padding-inline:20px;padding-block:24px 56px;display:flex;flex-direction:column;gap:22px}
-h1{font-family:var(--display);font-weight:700;font-size:2.4rem;line-height:1;margin:0;text-wrap:balance}
-h2{font-family:var(--display);font-weight:700;font-size:1.3rem;text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px}
-.sub{color:var(--muted);margin:6px 0 0;max-width:70ch}
-nav{display:flex;flex-wrap:wrap;gap:6px}
-nav a{font-weight:600;font-size:.88rem;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px;display:inline-flex;align-items:center;gap:6px}
-nav a:hover{border-color:var(--accent)}
-nav a[aria-current="page"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-nav a .dot{width:7px;height:7px;border-radius:50%;background:var(--good)}
-nav a .dot.bad{background:var(--bad)} nav a .dot.warn{background:var(--warn)}
-a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px}
-.scroll{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:.92rem}
-th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
-thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
-tbody tr:last-child td{border-bottom:none}
-.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.board{min-width:860px}
-.board tbody tr{cursor:pointer}
-.board tbody tr:hover td{background:var(--soft)}
-.tm b{display:block} .tm span{color:var(--muted);font-size:.82rem}
-.cnt{font-variant-numeric:tabular-nums;white-space:nowrap}
-.cnt.over{color:var(--bad);font-weight:700}
-.meter{position:relative;height:10px;border-radius:5px;background:var(--soft);min-width:170px}
-.meter .fill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--good)}
-.meter .fill.tax{background:var(--warn)} .meter .fill.over{background:var(--bad)}
-.meter .tick{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.55}
-.mrow{display:flex;align-items:center;gap:10px}
-.mrow .num{min-width:3.2em;font-weight:700}
-.chips{display:flex;flex-wrap:wrap;gap:4px}
-.chip{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
-.chip.ok{background:var(--good-soft);color:var(--good)}
-.chip.warn{background:var(--warn-soft);color:var(--warn)}
-.chip.bad{background:var(--bad-soft);color:var(--bad)}
-.legend{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:.85rem;margin-top:10px}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-.stat{padding:14px 16px}
-.stat .k{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
-.stat .v{font-family:var(--display);font-weight:700;font-size:1.9rem;line-height:1.1;font-variant-numeric:tabular-nums}
-.stat .n{font-size:.82rem;color:var(--muted)}
-.v.bad{color:var(--bad)} .v.warn{color:var(--warn)} .v.good{color:var(--good)}
-.issues{margin:0;padding:12px 16px 12px 34px;display:flex;flex-direction:column;gap:4px}
-.issues.none{list-style:none;padding-left:16px;color:var(--good);font-weight:600}
-.sheet{min-width:640px}
-.sheet tr.grp td{background:var(--soft);font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:.95rem;padding-block:6px}
-.sheet tr.grp td .n{font-family:var(--body);text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted);font-size:.82rem;margin-left:8px}
-.slot{font-family:var(--display);font-weight:700;letter-spacing:.04em;color:var(--muted);width:64px}
-.slot.xs{color:var(--bad)}
-.pl{font-weight:600}
-.open{color:var(--muted);font-style:italic}
-.src{font-size:.82rem;color:var(--muted);white-space:nowrap}
-.src.new{color:var(--accent);font-weight:600}
-.flag{display:block;font-size:.78rem;color:var(--bad);font-weight:700}
-tr.overrow td{background:var(--bad-soft)}
-.foot{color:var(--muted);font-size:.84rem;max-width:80ch;margin:0}
-@media (max-width:520px){.wrap{padding-inline:16px}h1{font-size:2rem}}
-select.act{font:inherit;font-size:.85rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 6px;cursor:pointer}
-select.act.chg{border-color:var(--accent);background:var(--accent-soft);font-weight:700}
-select.act.cut{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
-select.act:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-tr.cutrow td{opacity:.55} tr.cutrow .pl{text-decoration:line-through} tr.cutrow td:last-child{opacity:1}
-tr.moverow td{background:var(--accent-soft)}
-.mv{display:block;font-size:.78rem;color:var(--accent);font-weight:700}
-.was{color:var(--muted);text-decoration:line-through;margin-left:4px}
-.chip.plan{background:var(--accent-soft);color:var(--accent)}
-.planbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border-left:4px solid var(--line)}
-.planbar.isok{border-left-color:var(--good)} .planbar.isbad{border-left-color:var(--bad)}
-.planbar p{margin:2px 0 0;color:var(--muted);font-size:.9rem;max-width:70ch}
-.planbtns{display:flex;gap:8px;flex-wrap:wrap}
-button{font:inherit;font-weight:700;font-size:.88rem;border-radius:8px;padding:7px 14px;cursor:pointer;background:var(--ink);color:var(--bg);border:1px solid var(--ink)}
-button.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
-.status{font-size:.88rem;color:var(--muted);margin:0;min-height:1.2em}
-.copybox{white-space:pre-wrap;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px;user-select:all;color:var(--ink)}
-.sheet{min-width:760px}
-</style>
+<link rel="stylesheet" href="/roster.css">
 </head>
 <body>
-
 <div class="wrap">
   <header>
     <h1>CoD League Rosters</h1>
-    <p class="sub">Season 2 rosters, salaries and cap compliance, pulled from Sleeper on Oct 19, 2026, after the Oct 18 free agent auction.</p>
+    <p class="sub" id="sub">Season 2 rosters, salaries and cap compliance after the Oct 18 free agent auction.</p>
   </header>
-  <nav id="nav" aria-label="Pages"></nav>
-  <main id="view"></main>
-  <p class="foot">Kept players got the 2nd-season raise: +10%, at least +$1, rounded up. Players won in the auction cost their winning bid. Taxi players get no raise. Cap hit is full salary for active players, half salary (rounded up) for IR and $0 for taxi. The cap is $210, the hard cap is $230, and the buy-in follows the payroll scale in the charter. Injury statuses are as of Oct 19.</p>
+  <nav id="nav" aria-label="Teams"></nav>
+  <main id="view"><div class="panel banner">Loading rosters…</div></main>
+  <p class="foot">This page is read-only. To plan and submit your roster moves, use your team's private link from the commissioner. Kept players got the 2nd-season raise: +10%, at least +$1, rounded up. Players won in the auction cost their winning bid. Taxi players get no raise. Cap hit is full salary for active players, half salary (rounded up) for IR and $0 for taxi. The cap is $210, the hard cap is $230, and the buy-in follows the payroll scale in the charter.</p>
 </div>
-
+<script src="/roster-core.js"></script>
 <script>
-const DATA = {"asof": "2026-10-19", "teams": [{"rid": 1, "owner": "DaddiesDumpah", "name": "Submissive Male", "players": [{"id": "1613", "name": "Karl-Anthony Towns", "s1": null, "s2": 23, "src": "auction", "status": "active", "hit": 23, "slot": "C", "flag": null}, {"id": "1637", "name": "Norman Powell", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "1711", "name": "Jaylen Brown", "s1": null, "s2": 11, "src": "auction", "status": "active", "hit": 11, "slot": "SG", "flag": null}, {"id": "1716", "name": "Pascal Siakam", "s1": 29, "s2": 32, "src": "kept", "status": "active", "hit": 32, "slot": "PF", "flag": null}, {"id": "1787", "name": "Jarrett Allen", "s1": 9, "s2": 10, "src": "kept", "status": "active", "hit": 10, "slot": null, "flag": null}, {"id": "1830", "name": "Derrick White", "s1": null, "s2": 10, "src": "auction", "status": "active", "hit": 10, "slot": null, "flag": null}, {"id": "2126", "name": "Tyrese Maxey", "s1": 21, "s2": 24, "src": "kept", "status": "active", "hit": 24, "slot": "PG", "flag": null}, {"id": "2179", "name": "LaMelo Ball", "s1": 32, "s2": 36, "src": "kept", "status": "active", "hit": 36, "slot": "UTIL", "flag": null}, {"id": "2284", "name": "Jalen Johnson", "s1": 17, "s2": 19, "src": "kept", "status": "active", "hit": 19, "slot": "SF", "flag": null}, {"id": "2590", "name": "Anthony Black", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "2722", "name": "Stephon Castle", "s1": 2, "s2": 3, "src": "kept", "status": "active", "hit": 3, "slot": "UTIL", "flag": null}, {"id": "2724", "name": "Isaiah Collier", "s1": 1, "s2": 1, "src": "kept-taxi", "status": "taxi", "hit": 0, "slot": null, "flag": null}, {"id": "4748", "name": "Cedric Coward", "s1": null, "s2": 2, "src": "auction", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "4752", "name": "Hugo González", "s1": 1, "s2": 1, "src": "kept-taxi", "status": "taxi", "hit": 0, "slot": null, "flag": null}, {"id": "4873", "name": "Cameron Boozer", "s1": null, "s2": 30, "src": "auction", "status": "active", "hit": 30, "slot": "UTIL", "flag": null}, {"id": "4882", "name": "Darryn Peterson", "s1": null, "s2": 10, "src": "auction", "status": "active", "hit": 10, "slot": null, "flag": null}, {"id": "4885", "name": "Morez Johnson", "s1": null, "s2": 2, "src": "auction", "status": "taxi", "hit": 0, "slot": null, "flag": null}, {"id": "4888", "name": "Aday Mara", "s1": null, "s2": 1, "src": "auction", "status": "taxi", "hit": 0, "slot": null, "flag": null}, {"id": "4891", "name": "Darius Acuff", "s1": null, "s2": 2, "src": "auction", "status": "active", "hit": 2, "slot": null, "flag": null}], "empty_starters": 0, "active": 15, "ir": 0, "taxi": 4, "payroll": 216, "buyin": 53.0, "kept": 130, "won": 91}, {"rid": 2, "owner": "pgcannon2000", "name": "Suck it Mitch", "players": [{"id": "1265", "name": "Jrue Holiday", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "1450", "name": "CJ McCollum", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "1585", "name": "Aaron Gordon", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "1658", "name": "Nikola Jokić", "s1": 81, "s2": 90, "src": "kept", "status": "active", "hit": 90, "slot": "C", "flag": null}, {"id": "1822", "name": "Jayson Tatum", "s1": 31, "s2": 35, "src": "kept", "status": "active", "hit": 35, "slot": "SF", "flag": null}, {"id": "2012", "name": "Jordan Poole", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "2131", "name": "Saddiq Bey", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "2133", "name": "Anthony Edwards", "s1": 71, "s2": 79, "src": "kept", "status": "active", "hit": 79, "slot": "PG", "flag": null}, {"id": "2136", "name": "Onyeka Okongwu", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": "UTIL", "flag": null}, {"id": "2142", "name": "Payton Pritchard", "s1": 3, "s2": 4, "src": "kept", "status": "active", "hit": 4, "slot": "SG", "flag": null}, {"id": "2144", "name": "Aaron Nesmith", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "2146", "name": "Devin Vassell", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": "UTIL", "flag": null}, {"id": "2233", "name": "Naji Marshall", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2255", "name": "Ayo Dosunmu", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2258", "name": "Quentin Grimes", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2456", "name": "Keegan Murray", "s1": 1, "s2": 2, "src": "kept", "status": "ir", "hit": 1, "slot": null, "flag": "Day-to-day, not Out"}, {"id": "2463", "name": "Ryan Rollins", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "2494", "name": "Julian Champagnie", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2564", "name": "Brandin Podziemski", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2715", "name": "Bub Carrington", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "4875", "name": "Zuby Ejiofor", "s1": null, "s2": 1, "src": "auction", "status": "taxi", "hit": 0, "slot": null, "flag": null}], "empty_starters": 2, "active": 19, "ir": 1, "taxi": 1, "payroll": 231, "buyin": null, "kept": 224, "won": 9}, {"rid": 3, "owner": "jtrumps35", "name": "Chetty Wap", "players": [{"id": "1433", "name": "Kevin Durant", "s1": 32, "s2": 36, "src": "kept", "status": "active", "hit": 36, "slot": "SF", "flag": null}, {"id": "1444", "name": "Damian Lillard", "s1": null, "s2": 3, "src": "auction", "status": "active", "hit": 3, "slot": "PG", "flag": null}, {"id": "1739", "name": "Domantas Sabonis", "s1": null, "s2": 20, "src": "auction", "status": "active", "hit": 20, "slot": "PF", "flag": null}, {"id": "1967", "name": "Jalen Brunson", "s1": null, "s2": 16, "src": "auction", "status": "active", "hit": 16, "slot": "UTIL", "flag": null}, {"id": "1975", "name": "Mikal Bridges", "s1": 3, "s2": 4, "src": "kept", "status": "active", "hit": 4, "slot": null, "flag": null}, {"id": "2161", "name": "Tyrese Haliburton", "s1": null, "s2": 48, "src": "auction", "status": "active", "hit": 48, "slot": "SG", "flag": null}, {"id": "2438", "name": "Jalen Duren", "s1": 4, "s2": 5, "src": "kept", "status": "active", "hit": 5, "slot": "UTIL", "flag": null}, {"id": "2441", "name": "Walker Kessler", "s1": null, "s2": 3, "src": "auction", "status": "active", "hit": 3, "slot": "C", "flag": null}, {"id": "2455", "name": "Chet Holmgren", "s1": 33, "s2": 37, "src": "kept", "status": "active", "hit": 37, "slot": "UTIL", "flag": null}, {"id": "2566", "name": "Ausar Thompson", "s1": 3, "s2": 4, "src": "kept", "status": "active", "hit": 4, "slot": null, "flag": null}, {"id": "2726", "name": "Kel'el Ware", "s1": 2, "s2": 3, "src": "kept", "status": "active", "hit": 3, "slot": null, "flag": null}, {"id": "4738", "name": "Tre Johnson", "s1": 2, "s2": 2, "src": "kept-taxi", "status": "taxi", "hit": 0, "slot": null, "flag": null}, {"id": "4740", "name": "Kon Knueppel", "s1": 3, "s2": 4, "src": "kept", "status": "active", "hit": 4, "slot": null, "flag": null}, {"id": "4754", "name": "Dylan Harper", "s1": 15, "s2": 17, "src": "kept", "status": "active", "hit": 17, "slot": null, "flag": null}, {"id": "4755", "name": "Collin Murray-Boyles", "s1": null, "s2": 6, "src": "auction", "status": "active", "hit": 6, "slot": null, "flag": null}, {"id": "4862", "name": "Caleb Wilson", "s1": null, "s2": 16, "src": "auction", "status": "active", "hit": 16, "slot": null, "flag": null}, {"id": "4876", "name": "Kingston Flemings", "s1": null, "s2": 3, "src": "auction", "status": "taxi", "hit": 0, "slot": null, "flag": null}, {"id": "4880", "name": "Allen Graves", "s1": null, "s2": 1, "src": "auction", "status": "taxi", "hit": 0, "slot": null, "flag": null}, {"id": "4883", "name": "Brayden Burries", "s1": null, "s2": 6, "src": "auction", "status": "taxi", "hit": 0, "slot": null, "flag": null}], "empty_starters": 0, "active": 15, "ir": 0, "taxi": 4, "payroll": 222, "buyin": 57, "kept": 112, "won": 122}, {"rid": 4, "owner": "bcoon55", "name": "Chode Jugglers", "players": [{"id": "1380", "name": "Giannis Antetokounmpo", "s1": 71, "s2": 79, "src": "kept", "status": "active", "hit": 79, "slot": "PF", "flag": null}, {"id": "1718", "name": "Jakob Poeltl", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "1913", "name": "Miles Bridges", "s1": 3, "s2": 4, "src": "kept", "status": "active", "hit": 4, "slot": "UTIL", "flag": null}, {"id": "1934", "name": "Isaiah Hartenstein", "s1": null, "s2": 2, "src": "auction", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "1988", "name": "Michael Porter", "s1": 4, "s2": 5, "src": "kept", "status": "active", "hit": 5, "slot": "UTIL", "flag": null}, {"id": "1998", "name": "Coby White", "s1": null, "s2": 2, "src": "auction", "status": "active", "hit": 2, "slot": "UTIL", "flag": null}, {"id": "2568", "name": "Brandon Miller", "s1": 6, "s2": 7, "src": "kept", "status": "active", "hit": 7, "slot": "SG", "flag": null}, {"id": "2574", "name": "Amen Thompson", "s1": 58, "s2": 64, "src": "kept", "status": "active", "hit": 64, "slot": "PG", "flag": null}, {"id": "2586", "name": "Cason Wallace", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "2712", "name": "Jaylon Tyson", "s1": null, "s2": 2, "src": "auction", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "2714", "name": "Kyshawn George", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "2733", "name": "Alex Sarr", "s1": 2, "s2": 3, "src": "kept", "status": "active", "hit": 3, "slot": "C", "flag": null}, {"id": "2772", "name": "Ajay Mitchell", "s1": null, "s2": 3, "src": "auction", "status": "active", "hit": 3, "slot": null, "flag": null}, {"id": "4866", "name": "AJ Dybantsa", "s1": null, "s2": 23, "src": "auction", "status": "active", "hit": 23, "slot": "SF", "flag": null}, {"id": "4867", "name": "Ebuka Okorie", "s1": null, "s2": 1, "src": "auction", "status": "taxi", "hit": 0, "slot": null, "flag": null}, {"id": "4881", "name": "Keaton Wagler", "s1": null, "s2": 9, "src": "auction", "status": "active", "hit": 9, "slot": null, "flag": null}], "empty_starters": 0, "active": 15, "ir": 0, "taxi": 1, "payroll": 209, "buyin": 49.75, "kept": 168, "won": 42}, {"rid": 5, "owner": "thonmakercome", "name": "", "players": [{"id": "1085", "name": "Stephen Curry", "s1": 33, "s2": 37, "src": "kept", "status": "active", "hit": 37, "slot": "PG", "flag": null}, {"id": "1511", "name": "Joel Embiid", "s1": 18, "s2": 20, "src": "kept", "status": "active", "hit": 20, "slot": "UTIL", "flag": null}, {"id": "1535", "name": "Julius Randle", "s1": 8, "s2": 9, "src": "kept", "status": "active", "hit": 9, "slot": null, "flag": null}, {"id": "1697", "name": "Ivica Zubac", "s1": 7, "s2": 8, "src": "kept", "status": "active", "hit": 8, "slot": "C", "flag": null}, {"id": "1698", "name": "Brandon Ingram", "s1": 4, "s2": 5, "src": "kept", "status": "ir", "hit": 3, "slot": null, "flag": null}, {"id": "2086", "name": "Tyler Herro", "s1": 5, "s2": 6, "src": "kept", "status": "active", "hit": 6, "slot": "UTIL", "flag": null}, {"id": "2090", "name": "Ty Jerome", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2181", "name": "Deni Avdija", "s1": 2, "s2": 3, "src": "kept", "status": "active", "hit": 3, "slot": "PF", "flag": null}, {"id": "2289", "name": "Scottie Barnes", "s1": 25, "s2": 28, "src": "kept", "status": "active", "hit": 28, "slot": "SF", "flag": null}, {"id": "2309", "name": "Jalen Green", "s1": 10, "s2": 11, "src": "kept", "status": "active", "hit": 11, "slot": null, "flag": null}, {"id": "2313", "name": "Josh Giddey", "s1": 20, "s2": 22, "src": "kept", "status": "active", "hit": 22, "slot": "UTIL", "flag": null}, {"id": "2449", "name": "Dyson Daniels", "s1": 25, "s2": 28, "src": "kept", "status": "active", "hit": 28, "slot": null, "flag": null}, {"id": "2453", "name": "Jalen Williams", "s1": 18, "s2": 20, "src": "kept", "status": "active", "hit": 20, "slot": "SG", "flag": null}, {"id": "2583", "name": "Jaime Jaquez Jr.", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "4737", "name": "VJ Edgecombe", "s1": 10, "s2": 11, "src": "kept", "status": "active", "hit": 11, "slot": null, "flag": null}, {"id": "4758", "name": "Ace Bailey", "s1": 4, "s2": 5, "src": "kept", "status": "active", "hit": 5, "slot": null, "flag": null}, {"id": "4874", "name": "Cameron Carr", "s1": null, "s2": 1, "src": "auction", "status": "taxi", "hit": 0, "slot": null, "flag": null}, {"id": "4884", "name": "Nate Ament", "s1": null, "s2": 1, "src": "auction", "status": "taxi", "hit": 0, "slot": null, "flag": null}], "empty_starters": 0, "active": 15, "ir": 1, "taxi": 2, "payroll": 214, "buyin": 52.0, "kept": 215, "won": 3}, {"rid": 6, "owner": "nandomags", "name": "", "players": [{"id": "1000", "name": "Jimmy Butler", "s1": 5, "s2": 6, "src": "kept", "status": "active", "hit": 6, "slot": null, "flag": null}, {"id": "1074", "name": "Paul George", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": "UTIL", "flag": null}, {"id": "1240", "name": "James Harden", "s1": 34, "s2": 38, "src": "kept", "status": "active", "hit": 38, "slot": "UTIL", "flag": null}, {"id": "1308", "name": "Kawhi Leonard", "s1": 12, "s2": 14, "src": "kept", "status": "active", "hit": 14, "slot": "SF", "flag": null}, {"id": "1362", "name": "LeBron James", "s1": 32, "s2": 36, "src": "kept", "status": "active", "hit": 36, "slot": "PF", "flag": null}, {"id": "1950", "name": "Robert Williams", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2040", "name": "Ja Morant", "s1": 20, "s2": 22, "src": "kept", "status": "active", "hit": 22, "slot": "UTIL", "flag": null}, {"id": "2285", "name": "Trey Murphy", "s1": 12, "s2": 14, "src": "kept", "status": "active", "hit": 14, "slot": "SG", "flag": null}, {"id": "2286", "name": "Herbert Jones", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2296", "name": "Sandro Mamukelashvili", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2302", "name": "Neemias Queta", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2305", "name": "Jalen Suggs", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2435", "name": "Bennedict Mathurin", "s1": 2, "s2": 3, "src": "kept", "status": "active", "hit": 3, "slot": null, "flag": null}, {"id": "2439", "name": "Jaden Ivey", "s1": 2, "s2": 3, "src": "kept", "status": "active", "hit": 3, "slot": null, "flag": null}, {"id": "2468", "name": "Max Christie", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2476", "name": "Shaedon Sharpe", "s1": null, "s2": 3, "src": "auction", "status": "active", "hit": 3, "slot": null, "flag": null}, {"id": "2488", "name": "Gui Santos", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2584", "name": "Dereck Lively", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2728", "name": "Donovan Clingan", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": "C", "flag": null}, {"id": "2836", "name": "Ronald Holland", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "4760", "name": "Cooper Flagg", "s1": 61, "s2": 68, "src": "kept", "status": "active", "hit": 68, "slot": "PG", "flag": null}], "empty_starters": 0, "active": 21, "ir": 0, "taxi": 0, "payroll": 220, "buyin": 55.0, "kept": 208, "won": 12}, {"rid": 7, "owner": "porvida", "name": "YouSagOffYourSwagsOff", "players": [{"id": "1272", "name": "Anthony Davis", "s1": 44, "s2": 49, "src": "kept", "status": "active", "hit": 49, "slot": "PF", "flag": null}, {"id": "1350", "name": "Rudy Gobert", "s1": 2, "s2": 3, "src": "kept", "status": "active", "hit": 3, "slot": "UTIL", "flag": null}, {"id": "1648", "name": "Devin Booker", "s1": 51, "s2": 57, "src": "kept", "status": "active", "hit": 57, "slot": "PG", "flag": null}, {"id": "1713", "name": "Dejounte Murray", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "1831", "name": "OG Anunoby", "s1": 3, "s2": 4, "src": "kept", "status": "active", "hit": 4, "slot": "SF", "flag": null}, {"id": "1883", "name": "Wendell Carter", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "1964", "name": "Donte DiVincenzo", "s1": null, "s2": 1, "src": "auction", "status": "ir", "hit": 1, "slot": null, "flag": null}, {"id": "2091", "name": "Cameron Johnson", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "2143", "name": "Desmond Bane", "s1": 7, "s2": 8, "src": "kept", "status": "active", "hit": 8, "slot": "SG", "flag": null}, {"id": "2157", "name": "Immanuel Quickley", "s1": 6, "s2": 7, "src": "kept", "status": "active", "hit": 7, "slot": "UTIL", "flag": null}, {"id": "2301", "name": "Davion Mitchell", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2445", "name": "Jabari Smith", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "2577", "name": "Victor Wembanyama", "s1": 79, "s2": 87, "src": "kept", "status": "active", "hit": 87, "slot": "C", "flag": null}, {"id": "2580", "name": "Keyonte George", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": "UTIL", "flag": null}, {"id": "2719", "name": "Reed Sheppard", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "2737", "name": "Zaccharie Risacher", "s1": null, "s2": 1, "src": "auction", "status": "taxi", "hit": 0, "slot": null, "flag": "3rd NBA season"}, {"id": "4757", "name": "Walter Clayton", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "4793", "name": "Maxime Raynaud", "s1": null, "s2": 1, "src": "auction", "status": "ir", "hit": 1, "slot": null, "flag": "Day-to-day, not Out"}], "empty_starters": 0, "active": 15, "ir": 2, "taxi": 1, "payroll": 230, "buyin": 65, "kept": 225, "won": 6}, {"rid": 8, "owner": "RyRob12", "name": "LeFantasy", "players": [{"id": "1321", "name": "DeMar DeRozan", "s1": 5, "s2": 6, "src": "kept", "status": "active", "hit": 6, "slot": null, "flag": null}, {"id": "1526", "name": "Zach LaVine", "s1": 3, "s2": 4, "src": "kept", "status": "active", "hit": 4, "slot": null, "flag": null}, {"id": "1747", "name": "Jamal Murray", "s1": 4, "s2": 5, "src": "kept", "status": "active", "hit": 5, "slot": "UTIL", "flag": null}, {"id": "1752", "name": "Lauri Markkanen", "s1": 7, "s2": 8, "src": "kept", "status": "active", "hit": 8, "slot": "UTIL", "flag": null}, {"id": "1803", "name": "Josh Hart", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": "SG", "flag": null}, {"id": "1924", "name": "Jaren Jackson", "s1": 15, "s2": 17, "src": "kept", "status": "active", "hit": 17, "slot": "C", "flag": null}, {"id": "1974", "name": "Deandre Ayton", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2007", "name": "Darius Garland", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2036", "name": "Naz Reid", "s1": 3, "s2": 4, "src": "kept", "status": "active", "hit": 4, "slot": null, "flag": null}, {"id": "2054", "name": "Zion Williamson", "s1": 18, "s2": 20, "src": "kept", "status": "active", "hit": 20, "slot": "UTIL", "flag": null}, {"id": "2135", "name": "Jaden McDaniels", "s1": 4, "s2": 5, "src": "kept", "status": "active", "hit": 5, "slot": null, "flag": null}, {"id": "2259", "name": "Evan Mobley", "s1": 38, "s2": 42, "src": "kept", "status": "active", "hit": 42, "slot": "PF", "flag": null}, {"id": "2267", "name": "Cade Cunningham", "s1": 70, "s2": 77, "src": "kept", "status": "active", "hit": 77, "slot": "PG", "flag": null}, {"id": "2304", "name": "Franz Wagner", "s1": 24, "s2": 27, "src": "kept", "status": "active", "hit": 27, "slot": "SF", "flag": null}, {"id": "2447", "name": "Tari Eason", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2461", "name": "Andrew Nembhard", "s1": 3, "s2": 4, "src": "kept", "status": "active", "hit": 4, "slot": null, "flag": null}, {"id": "4750", "name": "Jeremiah Fears", "s1": 2, "s2": 2, "src": "kept-taxi", "status": "taxi", "hit": 0, "slot": null, "flag": null}, {"id": "4753", "name": "Carter Bryant", "s1": null, "s2": 1, "src": "auction", "status": "taxi", "hit": 0, "slot": null, "flag": null}, {"id": "4759", "name": "Kasparas Jakučionis", "s1": null, "s2": 1, "src": "auction", "status": "taxi", "hit": 0, "slot": null, "flag": null}, {"id": "4868", "name": "Christian Anderson", "s1": null, "s2": 1, "src": "auction", "status": "taxi", "hit": 0, "slot": null, "flag": null}], "empty_starters": 0, "active": 16, "ir": 0, "taxi": 4, "payroll": 224, "buyin": 59, "kept": 223, "won": 6}, {"rid": 9, "owner": "lorenzoxv9", "name": "ItsyaboyGento", "players": [{"id": "1054", "name": "Kyrie Irving", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": "UTIL", "flag": null}, {"id": "1595", "name": "Myles Turner", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "1717", "name": "Fred VanVleet", "s1": null, "s2": 2, "src": "auction", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "1792", "name": "Dillon Brooks", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "1872", "name": "De'Aaron Fox", "s1": null, "s2": 2, "src": "auction", "status": "active", "hit": 2, "slot": "UTIL", "flag": null}, {"id": "1957", "name": "Shai Gilgeous-Alexander", "s1": null, "s2": 78, "src": "auction", "status": "active", "hit": 78, "slot": "UTIL", "flag": null}, {"id": "1970", "name": "Luka Dončić", "s1": null, "s2": 81, "src": "auction", "status": "active", "hit": 81, "slot": "PG", "flag": null}, {"id": "2032", "name": "Nic Claxton", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "2055", "name": "Nickeil Alexander-Walker", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": "SG", "flag": null}, {"id": "2275", "name": "Day'Ron Sharpe", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": "C", "flag": null}, {"id": "2308", "name": "Alperen Şengün", "s1": null, "s2": 32, "src": "auction", "status": "active", "hit": 32, "slot": "PF", "flag": null}, {"id": "2613", "name": "Toumani Camara", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "2835", "name": "Matas Buzelis", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": "SF", "flag": null}, {"id": "4864", "name": "Yaxel Lendeborg", "s1": null, "s2": 11, "src": "auction", "status": "active", "hit": 11, "slot": null, "flag": null}, {"id": "4871", "name": "Mikel Brown", "s1": null, "s2": 3, "src": "auction", "status": "active", "hit": 3, "slot": null, "flag": null}], "empty_starters": 0, "active": 15, "ir": 0, "taxi": 0, "payroll": 222, "buyin": 57, "kept": 10, "won": 212}, {"rid": 10, "owner": "lucaferrari9", "name": "Baby Jokic", "players": [{"id": "1257", "name": "Al Horford", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "1583", "name": "Jusuf Nurkić", "s1": 1, "s2": 2, "src": "kept", "status": "ir", "hit": 1, "slot": null, "flag": null}, {"id": "1845", "name": "Donovan Mitchell", "s1": 41, "s2": 46, "src": "kept", "status": "active", "hit": 46, "slot": "PG", "flag": null}, {"id": "1846", "name": "Bam Adebayo", "s1": 25, "s2": 28, "src": "kept", "status": "active", "hit": 28, "slot": "C", "flag": null}, {"id": "1945", "name": "Trae Young", "s1": 45, "s2": 50, "src": "kept", "status": "active", "hit": 50, "slot": "UTIL", "flag": null}, {"id": "1959", "name": "Grayson Allen", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2001", "name": "RJ Barrett", "s1": 3, "s2": 4, "src": "kept", "status": "active", "hit": 4, "slot": "SF", "flag": null}, {"id": "2009", "name": "Kevin Porter", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "2029", "name": "P.J. Washington", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2050", "name": "De'Andre Hunter", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2316", "name": "Austin Reaves", "s1": 15, "s2": 17, "src": "kept", "status": "active", "hit": 17, "slot": "SG", "flag": null}, {"id": "2422", "name": "Collin Gillespie", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2457", "name": "Christian Braun", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2458", "name": "Paolo Banchero", "s1": 62, "s2": 69, "src": "kept", "status": "active", "hit": 69, "slot": "PF", "flag": null}, {"id": "2474", "name": "Moussa Diabaté", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2718", "name": "Zach Edey", "s1": 1, "s2": 2, "src": "kept", "status": "ir", "hit": 1, "slot": null, "flag": "Not injured"}, {"id": "2752", "name": "Cam Spencer", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "2766", "name": "Kyle Filipowski", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "4747", "name": "Joan Beringer", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "4751", "name": "Derik Queen", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "4761", "name": "Khaman Maluach", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}, {"id": "4764", "name": "Nique Clifford", "s1": 1, "s2": 2, "src": "kept", "status": "active", "hit": 2, "slot": null, "flag": null}, {"id": "4863", "name": "Dailyn Swain", "s1": null, "s2": 1, "src": "auction", "status": "active", "hit": 1, "slot": null, "flag": null}], "empty_starters": 2, "active": 21, "ir": 2, "taxi": 0, "payroll": 236, "buyin": null, "kept": 228, "won": 10}]};
-const CAP = 210, HARD = 230, ACTIVE = 15, IRMAX = 3, TAXIMAX = 4, SCALE = 240;
-const SLOTS = ["PG","SG","SF","PF","C","UTIL","UTIL","UTIL"];
-const IR_OUT = new Set(["1698","1964","1583"]);            // listed Out on Oct 19
-const IR_NOT = {"2456":"day-to-day, not Out","4793":"day-to-day, not Out","2718":"not injured"};
-const TAXI_GRANDFATHERED = new Set(["2724","4752"]);
-const $ = s => document.querySelector(s);
-const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const money = n => n == null ? "—" : "$" + (Number.isInteger(n) ? n : n.toFixed(2));
-const LABEL = {active:"Active", ir:"IR", taxi:"Taxi", cut:"Cut"};
-
-/* ---- per-viewer plans, kept in this browser only ---- */
-const KEY = "cod-roster-plans-v1";
-let PLANS = {};
-try { PLANS = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch { PLANS = {}; }
-function savePlans(){ try { localStorage.setItem(KEY, JSON.stringify(PLANS)); } catch {} }
-const planOf = t => PLANS[t.owner] || {};
-const hasPlan = t => Object.keys(planOf(t)).length > 0;
-
-function buyin(p){
-  if (p <= CAP) return 50 - 0.25 * (CAP - p);
-  if (p <= 220) return 50 + 0.5 * (p - CAP);
-  if (p <= HARD) return 55 + (p - 220);
-  return null;
-}
-const taxiOK = id => Number(id) >= 4700 || TAXI_GRANDFATHERED.has(id);
-const hitFor = (p, st) => st === "active" ? p.s2 : st === "ir" ? Math.ceil(p.s2 / 2) : 0;
-
-/* team state: official (Sleeper) or with this viewer's plan applied */
-function state(t, withPlan){
-  const plan = withPlan ? planOf(t) : {};
-  const ps = t.players.map(p => { const st = plan[p.id] || p.status; return {...p, st, hitNow: hitFor(p, st), moved: st !== p.status}; });
-  const kept = ps.filter(p => p.st !== "cut");
-  const payroll = kept.reduce((s,p) => s + p.hitNow, 0);
-  return {ps, payroll, buyin: buyin(payroll),
-    active: kept.filter(p => p.st === "active").length, ir: kept.filter(p => p.st === "ir").length, taxi: kept.filter(p => p.st === "taxi").length,
-    cut: ps.filter(p => p.st === "cut"), moved: ps.filter(p => p.moved)};
-}
-
-function issues(t, s){
-  const out = [];
-  if (s.active > ACTIVE) out.push(["bad", `${s.active - ACTIVE} over the 15-man roster`, `${s.active} active players. Cut or move ${s.active - ACTIVE} more to get down to 15.`]);
-  if (s.ir > IRMAX) out.push(["bad", "Too many on IR", `${s.ir} on IR. The limit is 3.`]);
-  if (s.taxi > TAXIMAX) out.push(["bad", "Too many on taxi", `${s.taxi} on taxi. The limit is 4.`]);
-  if (s.payroll > HARD) out.push(["bad", `$${s.payroll - HARD} over hard cap`, `Payroll is ${money(s.payroll)}, over the $230 hard cap. Clear $${s.payroll - HARD} or more.`]);
-  for (const p of s.ps){
-    if (p.st === "ir" && IR_NOT[p.id]) out.push(["bad", "IR not eligible", `${p.name} is on IR but is ${IR_NOT[p.id]}. Only players listed Out can use IR.`]);
-    else if (p.st === "ir" && !IR_OUT.has(p.id)) out.push(["warn", "Check IR status", `${p.name} can only go on IR if Sleeper lists him as Out.`]);
-    if (p.st === "taxi" && !taxiOK(p.id)) out.push(["bad", "Taxi not eligible", `${p.name} isn't in his first two NBA seasons, so he can't go on taxi.`]);
+(() => {
+  const R = window.Roster, $ = s => document.querySelector(s);
+  let teams = [];
+  function nav(cur) {
+    $("#nav").innerHTML = `<a href="#league"${cur === "league" ? ' aria-current="page"' : ""}>League</a>` + teams.map(t => {
+      const lv = R.level(t, R.state(t));
+      return `<a href="#${t.key}"${cur === t.key ? ' aria-current="page"' : ""}><span class="dot ${lv === "ok" ? "" : lv}"></span>${R.esc(t.manager)}</a>`; }).join("");
   }
-  if (t.empty_starters && !hasPlan(t)) out.push(["warn", `${t.empty_starters} empty starter slots`, `${t.empty_starters} starting slots are empty in Sleeper.`]);
-  if (s.payroll > CAP && s.payroll <= HARD) out.push(["warn", "Luxury tax", `Payroll is ${money(s.payroll - CAP)} over the $210 cap, so the buy-in is ${money(s.buyin)}.`]);
-  return out;
-}
-const level = (t, s) => { const i = issues(t, s); return i.some(x => x[0]==="bad") ? "bad" : i.some(x => x[0]==="warn") ? "warn" : "ok"; };
-
-function meter(p){
-  const cls = p > HARD ? "over" : p > CAP ? "tax" : "";
-  return `<div class="mrow"><div class="meter" role="img" aria-label="Payroll ${money(p)} against $210 cap and $230 hard cap"><span class="fill ${cls}" style="width:${Math.min(p,SCALE)/SCALE*100}%"></span><span class="tick" style="left:${CAP/SCALE*100}%"></span><span class="tick" style="left:${HARD/SCALE*100}%"></span></div><span class="num">${money(p)}</span></div>`;
-}
-
-function nav(cur){
-  $("#nav").innerHTML = `<a href="#league"${cur==="league"?' aria-current="page"':""}>League</a>` + DATA.teams.map(t => {
-    const lv = level(t, state(t, false));
-    return `<a href="#${t.owner}"${cur===t.owner?' aria-current="page"':""}><span class="dot ${lv==="ok"?"":lv}"></span>${esc(t.owner)}</a>`; }).join("");
-}
-
-function league(){
-  const st = DATA.teams.map(t => [t, state(t, false)]);
-  const ok = st.filter(([t,s]) => !issues(t,s).some(x => x[0]==="bad")).length;
-  const rows = [...st].sort((a,b) => b[1].payroll - a[1].payroll).map(([t,s]) => {
-    const iss = issues(t, s);
-    const chips = (iss.length ? iss.map(([l, x]) => `<span class="chip ${l}">${esc(x)}</span>`).join("") : `<span class="chip ok">Compliant</span>`)
-      + (hasPlan(t) ? `<span class="chip plan">Your plan saved</span>` : "");
-    return `<tr data-team="${t.owner}" tabindex="0"><td class="tm"><b>${esc(t.owner)}</b>${t.name?`<span>${esc(t.name)}</span>`:""}</td>
-      <td class="cnt ${s.active>ACTIVE?"over":""}">${s.active} / 15</td><td class="cnt ${s.ir>IRMAX?"over":""}">${s.ir} / 3</td><td class="cnt ${s.taxi>TAXIMAX?"over":""}">${s.taxi} / 4</td>
-      <td>${meter(s.payroll)}</td><td class="num">${money(s.buyin)}</td><td><div class="chips">${chips}</div></td></tr>`;
-  }).join("");
-  const pot = st.reduce((x,[,s]) => x + (s.buyin ?? 0), 0);
-  return `<section><h2>Roster compliance</h2>
-    <p class="sub" style="margin:0 0 12px">This board shows rosters as they stand in Sleeper. Open your team to plan cuts and moves.</p>
-    <div class="stats" style="margin-bottom:14px">
-      <div class="panel stat"><div class="k">Fully compliant</div><div class="v ${ok===10?"good":"bad"}">${ok} / 10</div><div class="n">teams with no rule violations</div></div>
-      <div class="panel stat"><div class="k">Over the $210 cap</div><div class="v warn">${st.filter(([,s])=>s.payroll>CAP).length}</div><div class="n">teams paying luxury tax or over the hard cap</div></div>
-      <div class="panel stat"><div class="k">Projected pot</div><div class="v">${money(pot)}</div><div class="n">from the ${st.filter(([,s])=>s.buyin!=null).length} teams at or under $230</div></div>
-    </div>
-    <div class="panel scroll"><table class="board"><thead><tr><th>Team</th><th>Active</th><th>IR</th><th>Taxi</th><th>Payroll (cap hit)</th><th class="num">Buy-in</th><th>Issues</th></tr></thead><tbody>${rows}</tbody></table></div>
-    <div class="legend"><span><i style="background:var(--good)"></i>At or under $210</span><span><i style="background:var(--warn)"></i>$211–$230, luxury tax</span><span><i style="background:var(--bad)"></i>Over the $230 hard cap</span><span>Tick marks show $210 and $230.</span></div>
-  </section>`;
-}
-
-function srcLabel(p){
-  if (p.src === "auction") return `<span class="src new">Won Oct 18 auction</span>`;
-  if (p.src === "kept-taxi") return `<span class="src">Kept · taxi, no raise</span>`;
-  return `<span class="src">Kept · 2nd-season raise</span>`;
-}
-function actionSelect(t, p){
-  const opts = ["active","ir","taxi","cut"].map(v => `<option value="${v}"${v===p.st?" selected":""}>${v===p.status?LABEL[v]+" (now)":LABEL[v]}</option>`).join("");
-  return `<select class="act ${p.moved?"chg "+p.st:""}" id="a-${p.id}" data-owner="${t.owner}" data-id="${p.id}" aria-label="Plan for ${esc(p.name)}">${opts}</select>`;
-}
-function prow(t, slot, p, extra=""){
-  if (!p) return `<tr><td class="slot">${slot}</td><td class="open">Open</td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td></td></tr>`;
-  const cls = [extra, p.st==="cut"?"cutrow":"", p.moved&&p.st!=="cut"?"moverow":""].join(" ").trim();
-  const note = p.st==="cut" ? `<span class="mv">Cut · frees ${money(hitFor(p,p.status))}</span>`
-            : p.moved ? `<span class="mv">Move to ${LABEL[p.st]}</span>` : "";
-  const flag = p.status==="ir" && IR_NOT[p.id] && p.st==="ir" ? `<span class="flag">Not eligible for IR: ${esc(IR_NOT[p.id])}</span>`
-            : p.st==="taxi" && !taxiOK(p.id) ? `<span class="flag">Not eligible for taxi</span>` : "";
-  return `<tr class="${cls}"><td class="slot ${extra?"xs":""}">${slot}</td><td><span class="pl">${esc(p.name)}</span>${note}${flag}</td>
-    <td>${srcLabel(p)}</td><td class="num">${p.s1==null?"—":money(p.s1)}</td><td class="num"><b>${money(p.s2)}</b></td><td class="num">${money(p.hitNow)}</td><td>${actionSelect(t,p)}</td></tr>`;
-}
-
-function planText(t, s){
-  const lines = s.moved.map(p => p.st === "cut" ? `Cut ${p.name} (${money(p.s2)})` : `Move ${p.name} to ${LABEL[p.st]}`);
-  return `${t.owner} roster moves:\n- ${lines.join("\n- ")}\nResult: ${s.active} active, ${s.ir} IR, ${s.taxi} taxi. Payroll ${money(s.payroll)}, buy-in ${money(s.buyin)}.`;
-}
-
-function team(t){
-  const now = state(t, false), s = state(t, true);
-  const by = st => s.ps.filter(p => p.status === st);
-  const used = new Set();
-  const startRows = SLOTS.map(sl => { const p = s.ps.find(x => x.slot === sl && x.status === "active" && !used.has(x.id)); if (p) used.add(p.id); return prow(t, sl, p); }).join("");
-  const bench = by("active").filter(p => !used.has(p.id)).sort((a,b) => b.s2 - a.s2);
-  const nB = ACTIVE - SLOTS.length;
-  const benchRows = Array.from({length: Math.max(nB, bench.length)}, (_, i) => prow(t, i < nB ? "BN" : "Over", bench[i], i < nB ? "" : "overrow")).join("");
-  const fill = (arr, n, label) => Array.from({length: Math.max(n, arr.length)}, (_, i) => prow(t, i < n ? label : "Over", arr[i], i < n ? "" : "overrow")).join("");
-  const ir = by("ir"), tx = by("taxi");
-  const iss = issues(t, s), bad = iss.some(x => x[0]==="bad");
-  const room = CAP - s.payroll, planned = s.moved.length > 0;
-  const delta = (a, b) => a === b ? "" : ` <span class="was">was ${typeof a==="number"&&a>20?money(a):a}</span>`;
-  const grp = (name, note) => `<tr class="grp"><td colspan="7">${name}<span class="n">${note}</span></td></tr>`;
-  return `<section style="display:flex;flex-direction:column;gap:16px">
-    <div><h2 style="margin:0">${esc(t.owner)}</h2>${t.name?`<p class="sub" style="margin-top:2px">${esc(t.name)}</p>`:""}</div>
-    <div class="planbar panel ${planned?(bad?"isbad":"isok"):""}">
-      <div><b>${planned ? (bad ? "Your plan still has problems" : "Your plan makes this roster compliant") : (bad ? "This roster isn't compliant yet" : "This roster is compliant")}</b>
-      <p>${planned ? `${s.moved.length} move${s.moved.length>1?"s":""} planned. These are saved in this browser only and don't change Sleeper.` : "Use the Plan column to cut players or move them between active, IR and taxi. The totals and checks update as you go."}</p></div>
-      <div class="planbtns">${planned ? `<button type="button" id="copy">Copy moves</button><button type="button" id="reset" class="ghost">Reset to Sleeper</button>` : ""}</div>
-    </div>
-    <div class="stats">
-      <div class="panel stat"><div class="k">Payroll (cap hit)</div><div class="v ${s.payroll>HARD?"bad":s.payroll>CAP?"warn":"good"}">${money(s.payroll)}</div><div class="n">${room>=0?`${money(room)} under the $210 cap`:`${money(-room)} over the $210 cap`}${delta(now.payroll, s.payroll)}</div></div>
-      <div class="panel stat"><div class="k">Buy-in</div><div class="v">${s.buyin==null?"—":money(s.buyin)}</div><div class="n">${s.buyin==null?"Over the hard cap: not allowed":"from the payroll scale"}${now.buyin!==s.buyin&&now.buyin!=null?` <span class="was">was ${money(now.buyin)}</span>`:""}</div></div>
-      <div class="panel stat"><div class="k">Active roster</div><div class="v ${s.active>ACTIVE?"bad":"good"}">${s.active} / 15</div><div class="n">IR ${s.ir}/3 · Taxi ${s.taxi}/4${delta(now.active, s.active)}</div></div>
-      <div class="panel stat"><div class="k">Cuts planned</div><div class="v">${s.cut.length}</div><div class="n">${s.cut.length?`${money(s.cut.reduce((x,p)=>x+hitFor(p,p.status),0))} of cap freed`:"none yet"}</div></div>
-    </div>
-    <div class="panel"><ul class="issues ${iss.length?"":"none"}">${iss.length ? iss.map(([l,,d]) => `<li><span class="chip ${l}" style="margin-right:6px">${l==="bad"?"Fix":"Note"}</span>${esc(d)}</li>`).join("") : "<li>Compliant: roster, IR, taxi and payroll all within league rules.</li>"}</ul></div>
-    <div class="panel scroll"><table class="sheet"><thead><tr><th>Slot</th><th>Player</th><th>How acquired</th><th class="num">Season 1</th><th class="num">Season 2</th><th class="num">Cap hit</th><th>Plan</th></tr></thead><tbody>
-      ${grp("Starters", "8 slots in Sleeper")}${startRows}
-      ${grp("Bench", `${bench.length} of 7 slots used in Sleeper`)}${benchRows}
-      ${grp("Injured reserve", `${ir.length} of 3 in Sleeper · half salary counts`)}${fill(ir, IRMAX, "IR")}
-      ${grp("Taxi squad", `${tx.length} of 4 in Sleeper · doesn't count against the cap`)}${fill(tx, TAXIMAX, "TAXI")}
-    </tbody></table></div>
-    <p class="status" id="status" role="status"></p>
-  </section>`;
-}
-
-let current = "league";
-function render(){
-  const t = DATA.teams.find(x => x.owner === current);
-  nav(t ? t.owner : "league");
-  const y = window.scrollY, focusId = document.activeElement && document.activeElement.id;
-  $("#view").innerHTML = t ? team(t) : league();
-  if (focusId && document.getElementById(focusId)) document.getElementById(focusId).focus({preventScroll:true});
-  window.scrollTo(0, y);
-  document.querySelectorAll(".board tbody tr").forEach(tr => {
-    const go = () => { location.hash = tr.dataset.team; };
-    tr.addEventListener("click", go);
-    tr.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
-  });
-  if (t){
-    const reset = $("#reset"), copy = $("#copy");
-    if (reset) reset.addEventListener("click", () => { delete PLANS[t.owner]; savePlans(); render(); });
-    if (copy) copy.addEventListener("click", async () => {
-      const text = planText(t, state(t, true));
-      try { await navigator.clipboard.writeText(text); $("#status").textContent = "Moves copied. Paste them to the commissioner."; }
-      catch { $("#status").innerHTML = `Copy didn't work here. Select this text and copy it:<pre class="copybox">${esc(text)}</pre>`; }
-    });
+  function route() {
+    const h = location.hash.slice(1), t = teams.find(x => x.key === h);
+    nav(t ? t.key : "league");
+    $("#view").innerHTML = t ? R.sheet(t, {}) : R.board(teams, { href: x => "#" + x.key, note: "Rosters as they stand in Sleeper. Select a team to see its full roster." });
+    R.wireBoard($("#view"));
+    window.scrollTo(0, 0);
   }
-}
-document.addEventListener("change", e => {
-  const el = e.target;
-  if (!el.matches("select.act")) return;
-  const t = DATA.teams.find(x => x.owner === el.dataset.owner), p = t.players.find(x => x.id === el.dataset.id);
-  const plan = PLANS[t.owner] || (PLANS[t.owner] = {});
-  if (el.value === p.status) delete plan[p.id]; else plan[p.id] = el.value;
-  if (!Object.keys(plan).length) delete PLANS[t.owner];
-  savePlans(); render();
-});
-function route(){ const h = location.hash.slice(1); current = DATA.teams.some(x => x.owner === h) ? h : "league"; render(); window.scrollTo(0,0); }
-window.addEventListener("hashchange", route);
-route();
+  fetch("/api/rosters", { cache: "no-store" }).then(r => r.json().then(j => ({ ok: r.ok, j }))).then(({ ok, j }) => {
+    if (!ok) throw new Error(j.error || "Couldn't load rosters.");
+    teams = j.teams;
+    const d = new Date(j.asOf + "T12:00:00");
+    $("#sub").textContent = `Season 2 rosters, salaries and cap compliance after the Oct 18 free agent auction. Pulled from Sleeper on ${d.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}.`;
+    window.addEventListener("hashchange", route);
+    route();
+  }).catch(e => { $("#view").innerHTML = `<div class="panel banner err">${R.esc(e.message)} Reload the page to try again.</div>`; });
+})();
 </script>
-
 </body>
 </html>
