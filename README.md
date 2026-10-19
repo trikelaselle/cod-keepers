@@ -12,6 +12,12 @@ Keeper decisions for the Chode of Destiny league's Season 2 offseason.
 
 There's no framework and nothing to install. The site is static pages in `public/`, three Vercel functions in `api/`, and a free Upstash Redis database for the picks.
 
+## Rosters page
+
+`/rosters` shows every team's Season 2 roster after the Oct 18 auction: each Sleeper roster spot, Season 1 and Season 2 salaries, cap hits, the payroll-based buy-in and a league compliance board. On a team's page, managers can plan cuts and IR or taxi moves and copy the moves to send to the commissioner. Plans are saved only in the manager's own browser.
+
+The page is one static file, `public/rosters.html`, with the roster data built in. It's a snapshot of Sleeper from Oct 19, 2026, so it doesn't update on its own. To refresh it, replace the data in that file and push.
+
 ## Set up on Vercel (about 10 minutes)
 
 1. **Import the repo.** In Vercel, go to **Add New → Project** and import this repo. Leave the Framework Preset on **Other** and don't change any build settings, then click **Deploy**. The first deploy works, but saving picks won't work until you finish the next steps.
