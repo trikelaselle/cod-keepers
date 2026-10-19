@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light dark">
+<title>CoD Trade Machine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="/roster.css">
+<style>
+.sides{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.side{padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.side h3{font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:1.1rem;margin:0}
+.field{display:flex;flex-direction:column;gap:4px}
+.field > label{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
+.field select,.field input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+.field input{max-width:9em;font-variant-numeric:tabular-nums}
+.field .n{font-size:.82rem;color:var(--muted)}
+.facts{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.88rem;color:var(--muted)}
+.facts b{color:var(--ink);font-variant-numeric:tabular-nums}
+.plist{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:8px;max-height:430px;overflow:auto}
+.plist li{border-bottom:1px solid var(--line)} .plist li:last-child{border-bottom:none}
+.plist label{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:8px 10px;cursor:pointer}
+.plist label:hover{background:var(--soft)}
+.plist input{width:16px;height:16px;accent-color:var(--accent)}
+.plist .nm{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.plist .st{font-size:.72rem;font-weight:700;padding:1px 6px;border-radius:999px;background:var(--soft);color:var(--muted)}
+.plist .sal{font-variant-numeric:tabular-nums;text-align:right;min-width:4.5em;font-size:.88rem}
+.plist .sal small{display:block;color:var(--muted);font-size:.75rem}
+.plist li.on{background:var(--accent-soft)}
+.verdict{padding:16px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center;border-left:4px solid var(--line)}
+.verdict.ok{border-left-color:var(--good)} .verdict.bad{border-left-color:var(--bad)}
+.verdict b{font-size:1.05rem} .verdict p{margin:2px 0 0;color:var(--muted);font-size:.9rem;max-width:70ch}
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.res{padding:16px;display:flex;flex-direction:column;gap:10px}
+.res table{font-size:.9rem}
+.res td:first-child{color:var(--muted)}
+.res .after{font-weight:700}
+.res .delta{color:var(--muted);font-size:.8rem;margin-left:4px}
+.hint{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.9rem}
+button.small{padding:5px 10px;font-size:.82rem}
+.empty-note{color:var(--muted);font-size:.9rem;padding:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>CoD Trade Machine</h1>
+    <p class="sub">Build a trade and check it against both teams' cap numbers. Each team must stay at or under its cap number after the trade. Trading FAAB moves cap room from one team to the other.</p>
+  </header>
+  <nav aria-label="Pages"><a href="/rosters">Rosters</a><a href="/trades" aria-current="page">Trade machine</a></nav>
+  <main id="view" style="display:flex;flex-direction:column;gap:16px"><div class="panel banner">Loading rosters…</div></main>
+  <p class="foot">How cap numbers work: a team's cap number is the $210 cap, or its payroll at the start of the season if that was higher. During the season, a team's payroll can't go over its cap number. FAAB is a team's room under its cap number. A team that sends $5 of FAAB lowers its own cap number by $5 and raises the other team's by $5. No cap number can go over the $230 hard cap. Cap hit is full salary for active players, half for IR and $0 for taxi; traded players keep their status. This checks the cap only. The commissioner still has to approve and record the trade, including any FAAB.</p>
+</div>
+<script src="/roster-core.js"></script>
+<script>
+(() => {
+  const R = window.Roster, $ = s => document.querySelector(s), esc = R.esc, money = R.money;
+  const HARD = 230, ACTIVE = 15;
+  let teams = [], asOf = "";
+  const S = { a: { key: "", out: new Set(), faab: 0 }, b: { key: "", out: new Set(), faab: 0 } };
+  const team = k => teams.find(t => t.key === k);
+  const other = s => s === "a" ? "b" : "a";
+  const buyin = p => p <= 210 ? 50 - 0.25 * (210 - p) : p <= 220 ? 50 + 0.5 * (p - 210) : p <= HARD ? 55 + (p - 220) : null;
+
+  // Mirrors evaluateTradeSide in lib/league.js.
+  function evalSide(s) {
+    const me = team(S[s].key), them = team(S[other(s)].key);
+    const out = me.players.filter(p => S[s].out.has(p.id)), inc = them ? them.players.filter(p => S[other(s)].out.has(p.id)) : [];
+    const faabOut = S[s].faab, faabIn = S[other(s)].faab;
+    const after = me.players.filter(p => !S[s].out.has(p.id)).concat(inc);
+    const payroll = after.reduce((x, p) => x + p.hit, 0);
+    const capNum = me.capNumber - faabOut + faabIn;
+    const active = after.filter(p => p.status === "active").length;
+    const problems = [];
+    if (faabOut > me.faab) problems.push(`${me.manager} only has ${money(me.faab)} of FAAB to send.`);
+    if (capNum > HARD) problems.push(`${me.manager}'s cap number would be ${money(capNum)}, over the $230 hard cap.`);
+    if (payroll > Math.min(capNum, HARD)) problems.push(`${me.manager}'s payroll would be ${money(payroll)}, ${money(payroll - Math.min(capNum, HARD))} over its ${money(Math.min(capNum, HARD))} cap number.`);
+    return { me, out, inc, payroll, capNum, room: capNum - payroll, active, drops: Math.max(0, active - ACTIVE), buyin: payroll <= HARD ? buyin(payroll) : null, problems };
+  }
+
+  function sidePanel(s) {
+    const st = S[s], t = team(st.key);
+    const opts = `<option value="">Choose a team</option>` + teams.map(x => `<option value="${x.key}"${x.key === st.key ? " selected" : ""}${x.key === S[other(s)].key ? " disabled" : ""}>${esc(x.manager)}${x.team !== x.manager ? " · " + esc(x.team) : ""}</option>`).join("");
+    let body = `<p class="empty-note">Pick a team to see its roster.</p>`;
+    if (t) {
+      const list = [...t.players].sort((a, b) => b.s2 - a.s2).map(p => `<li class="${st.out.has(p.id) ? "on" : ""}"><label>
+        <input type="checkbox" data-side="${s}" data-id="${p.id}"${st.out.has(p.id) ? " checked" : ""}>
+        <span class="nm">${esc(p.name)}</span><span class="st">${p.status === "active" ? "Active" : p.status === "ir" ? "IR" : "Taxi"}</span>
+        <span class="sal">${money(p.s2)}<small>hit ${money(p.hit)}</small></span></label></li>`).join("");
+      body = `<div class="facts"><span>Payroll <b>${money(t.payroll)}</b></span><span>Cap number <b>${money(t.capNumber)}</b></span><span>FAAB <b>${money(t.faab)}</b></span></div>
+        <div class="field"><label for="faab-${s}">FAAB to send</label><input type="number" id="faab-${s}" data-side="${s}" min="0" max="${t.faab}" step="1" value="${st.faab || ""}" placeholder="$0" inputmode="numeric"><span class="n">${t.faab ? `Up to ${money(t.faab)}` : "No FAAB to send"}</span></div>
+        <div class="field"><label>Players to send</label><ul class="plist">${list}</ul></div>`;
+    }
+    return `<div class="panel side"><h3>${s === "a" ? "Team 1" : "Team 2"}</h3>
+      <div class="field"><label for="team-${s}">Team</label><select id="team-${s}" data-side="${s}">${opts}</select></div>${body}</div>`;
+  }
+
+  function resultPanel(r) {
+    const row = (k, before, after, fmt = money) => `<tr><td>${k}</td><td class="num">${fmt(before)}</td><td class="num after">${fmt(after)}</td></tr>`;
+    const gets = r.inc.map(p => esc(p.name)).join(", ") || "no players";
+    const faabIn = S[other(S.a.key === r.me.key ? "a" : "b")].faab;
+    return `<div class="panel res"><div class="card-top" style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
+        <div><h3 style="margin:0;font-family:var(--display);text-transform:uppercase;letter-spacing:.05em">${esc(r.me.manager)}</h3>
+        <p class="sub" style="margin:2px 0 0;font-size:.88rem">Gets ${gets}${faabIn ? ` and ${money(faabIn)} of FAAB` : ""}</p></div>
+        <span class="chip ${r.problems.length ? "bad" : "ok"}">${r.problems.length ? "Over the cap" : "Fits the cap"}</span></div>
+      <table><thead><tr><th></th><th class="num">Now</th><th class="num">After</th></tr></thead><tbody>
+        ${row("Payroll", r.me.payroll, r.payroll)}
+        ${row("Cap number", r.me.capNumber, r.capNum)}
+        ${row("Room (FAAB)", r.me.faab, r.room)}
+        ${row("Active players", r.me.players.filter(p => p.status === "active").length, r.active, x => x + " / 15")}
+        ${row("Buy-in", r.me.buyInCents == null ? null : r.me.buyInCents / 100, r.buyin)}
+      </tbody></table>
+      ${r.problems.map(x => `<p class="flag" style="margin:0;font-size:.88rem">${esc(x)}</p>`).join("")}
+      ${r.drops ? `<p class="saved" style="margin:0">Needs to drop ${r.drops} player${r.drops > 1 ? "s" : ""} to get back to 15 active.</p>` : ""}
+    </div>`;
+  }
+
+  function render() {
+    const y = window.scrollY, f = document.activeElement && document.activeElement.id;
+    const ready = team(S.a.key) && team(S.b.key);
+    let res = "";
+    if (ready) {
+      const ra = evalSide("a"), rb = evalSide("b");
+      const empty = !S.a.out.size && !S.b.out.size && !S.a.faab && !S.b.faab;
+      const ok = !ra.problems.length && !rb.problems.length;
+      // Suggest FAAB that would fix a side that's over, if the other side can afford it.
+      const hints = [["a", ra], ["b", rb]].map(([s, r]) => {
+        const over = r.payroll - Math.min(r.capNum, HARD), giver = other(s), g = team(S[giver].key);
+        const canGive = g.faab - S[giver].faab;
+        if (over > 0 && r.capNum < HARD && canGive >= over && r.capNum + over <= HARD)
+          return `<div class="hint">${esc(g.manager)} could send ${money(over)} more of FAAB to make this work for ${esc(r.me.manager)}. <button type="button" class="small ghost" data-addfaab="${giver}" data-amt="${over}">Add ${money(over)} FAAB</button></div>`;
+        return "";
+      }).join("");
+      res = empty ? `<div class="panel verdict"><div><b>Add players or FAAB to build a trade</b><p>Check the players each team sends. The results update as you go.</p></div></div>`
+        : `<div class="panel verdict ${ok ? "ok" : "bad"}"><div><b>${ok ? "This trade works under both teams' cap numbers" : "This trade doesn't fit the cap"}</b>
+          <p>${ok ? (ra.drops || rb.drops ? "Both teams stay at or under their cap numbers. One team still needs to drop a player to get back to 15 active." : "Both teams stay at or under their cap numbers.") : esc([...ra.problems, ...rb.problems].join(" "))}</p>${hints}</div>
+          <div class="planbtns"><button type="button" id="copy">Copy trade</button></div></div>
+          <p class="status" id="status" role="status"></p>
+          <div class="results">${resultPanel(ra)}${resultPanel(rb)}</div>`;
+    }
+    $("#view").innerHTML = `<div class="sides">${sidePanel("a")}${sidePanel("b")}</div>${res}`;
+    if (f && document.getElementById(f)) { const el = document.getElementById(f); el.focus({ preventScroll: true }); if (el.type === "number") { const v = el.value; el.value = ""; el.value = v; } }
+    window.scrollTo(0, y);
+    const c = $("#copy"); if (c) c.onclick = copyTrade;
+    document.querySelectorAll("[data-addfaab]").forEach(b => b.onclick = () => { const s = b.dataset.addfaab; S[s].faab += Number(b.dataset.amt); render(); });
+  }
+
+  async function copyTrade() {
+    const ra = evalSide("a"), rb = evalSide("b");
+    const line = (r, s) => `${r.me.manager} sends: ${[...r.out.map(p => `${p.name} (${money(p.s2)})`), ...(S[s].faab ? [`${money(S[s].faab)} FAAB`] : [])].join(", ") || "nothing"}`;
+    const res = r => `${r.me.manager}: payroll ${money(r.payroll)} / cap number ${money(r.capNum)}${r.problems.length ? " — OVER" : ""}`;
+    const text = `Trade proposal\n${line(ra, "a")}\n${line(rb, "b")}\n${res(ra)}\n${res(rb)}`;
+    try { await navigator.clipboard.writeText(text); $("#status").textContent = "Trade copied."; $("#status").className = "status ok"; }
+    catch { $("#status").innerHTML = `Copy didn't work here. Select this text and copy it:<pre class="copybox">${esc(text)}</pre>`; }
+  }
+
+  document.addEventListener("change", e => {
+    const el = e.target, s = el.dataset.side; if (!s) return;
+    if (el.tagName === "SELECT") { S[s] = { key: el.value, out: new Set(), faab: 0 }; S[other(s)].out = new Set(S[other(s)].out); }
+    else if (el.type === "checkbox") { el.checked ? S[s].out.add(el.dataset.id) : S[s].out.delete(el.dataset.id); }
+    else return;
+    syncUrl(); render();
+  });
+  document.addEventListener("input", e => {
+    const el = e.target; if (el.type !== "number" || !el.dataset.side) return;
+    const v = Math.max(0, Math.floor(Number(el.value) || 0)); S[el.dataset.side].faab = v; render();
+  });
+  function syncUrl() {
+    const q = new URLSearchParams(); if (S.a.key) q.set("a", S.a.key); if (S.b.key) q.set("b", S.b.key);
+    history.replaceState(null, "", "/trades" + (q.toString() ? "?" + q : ""));
+  }
+
+  fetch("/api/trades", { cache: "no-store" }).then(r => r.json().then(j => ({ ok: r.ok, j }))).then(({ ok, j }) => {
+    if (!ok) throw new Error(j.error || "Couldn't load rosters.");
+    teams = j.teams; asOf = j.asOf;
+    const q = new URLSearchParams(location.search);
+    if (team(q.get("a"))) S.a.key = q.get("a");
+    if (team(q.get("b")) && q.get("b") !== S.a.key) S.b.key = q.get("b");
+    render();
+  }).catch(e => { $("#view").innerHTML = `<div class="panel banner err">${esc(e.message)} Reload the page to try again.</div>`; });
+})();
+</script>
+</body>
+</html>

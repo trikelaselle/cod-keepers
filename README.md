@@ -23,6 +23,16 @@ Keeper decisions are finished, so each team's private link (`/t/<code>`) now ope
 - Optional `MOVES_DEADLINE` environment variable (for example `2026-10-22T20:00:00-04:00`) locks roster-move submissions. The old `DEADLINE` only applied to keeper picks.
 - **Keeper picks archive:** the keeper submissions (`sub:<team>`) and `lib/teams.js` are kept. Download them from the desk with "Keeper picks archive (CSV)".
 
+## Trade machine
+
+`/trades` lets anyone build a trade between two teams and check it against both teams' cap numbers. It's public and read-only.
+
+- A team's **cap number** is the most payroll it can carry in-season: the $210 cap, or its payroll at the start of the season if that was higher. A trade must leave both teams at or under their cap numbers.
+- **FAAB** is a team's room under its cap number. Trading FAAB moves cap room: the sender's cap number drops by that amount and the receiver's rises by it. No cap number can go over the $230 hard cap.
+- Rosters come from `lib/rosters.js` with each team's submitted roster moves applied. The rules live in `capNumber` and `evaluateTradeSide` in `lib/league.js`, and the page mirrors them for live feedback.
+- **Set the season-start payrolls** in `lib/caps.js` (`START_PAYROLL`) once rosters are final. Until then, cap numbers use each team's current payroll. **Record FAAB from completed trades** in `FAAB_TRADED` there, then push.
+- The machine only checks the cap. It doesn't make trades or move FAAB; the commissioner approves and records them.
+
 The setup below is unchanged.
 
 ## Set up on Vercel (about 10 minutes)
