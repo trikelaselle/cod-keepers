@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="/roster.css">
+<link rel="stylesheet" href="/roster.css?v=20261020c">
 <style>
 .sides{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
 .side{padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -55,7 +55,7 @@ button.small{padding:5px 10px;font-size:.82rem}
   <main id="view" style="display:flex;flex-direction:column;gap:16px"><div class="panel banner">Loading rosters…</div></main>
   <p class="foot">How cap numbers work: a team's cap number is the $210 cap, or its payroll at the start of the season if that was higher. During the season, a team's payroll can't go over its cap number. FAAB is a team's room under its cap number. A team that sends $5 of FAAB lowers its own cap number by $5 and raises the other team's by $5. No cap number can go over the $230 hard cap. Cap hit is full salary for active players, half for IR and $0 for taxi; traded players keep their status. This checks the cap only. The commissioner still has to approve and record the trade, including any FAAB.</p>
 </div>
-<script src="/roster-core.js"></script>
+<script src="/roster-core.js?v=20261020c"></script>
 <script>
 (() => {
   const R = window.Roster, $ = s => document.querySelector(s), esc = R.esc, money = R.money;

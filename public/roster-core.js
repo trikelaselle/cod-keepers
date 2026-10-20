@@ -31,10 +31,7 @@ window.Roster = (() => {
     if (s.ir > IRMAX) out.push(["bad", "Too many on IR", `${s.ir} on IR. The limit is 3.`]);
     if (s.taxi > TAXIMAX) out.push(["bad", "Too many on taxi", `${s.taxi} on taxi. The limit is 4.`]);
     if (s.payroll > HARD) out.push(["bad", `$${s.payroll - HARD} over hard cap`, `Payroll is ${money(s.payroll)}, over the $230 hard cap. Clear $${s.payroll - HARD} or more.`]);
-    for (const p of s.ps) {
-      if (p.st === "ir" && p.status !== "ir") out.push(["warn", "Check IR", `${p.name} can only go on IR if Sleeper allows it (Out, day-to-day, suspended or DNR).`]);
-      if (p.st === "taxi" && p.status !== "taxi") out.push(["warn", "Check taxi", `${p.name} can only go on taxi if Sleeper allows it.`]);
-    }
+    // IR and taxi eligibility follow Sleeper: whatever Sleeper allows is allowed, so nothing to check here.
     if (t.emptyStarters && !planned) out.push(["warn", `${t.emptyStarters} empty starter slots`, `${t.emptyStarters} starting slots are empty in Sleeper.`]);
     if (s.payroll > CAP && s.payroll <= HARD) out.push(["warn", "Luxury tax", `Payroll is ${money(s.payroll - CAP)} over the $210 cap, so the buy-in is ${money(s.buyin)}.`]);
     return out;
