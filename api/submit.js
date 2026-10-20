@@ -1,6 +1,6 @@
 // POST /api/submit  { token, plan: { playerId: "active" | "ir" | "taxi" | "cut" } }
 // Saves a team's Season 2 roster moves. The server re-checks the plan against the charter
-// (15 active, 3 IR, 4 taxi, $230 hard cap, taxi and IR eligibility) and refuses it if anything fails.
+// (15 active, 3 IR, 4 taxi, $230 hard cap, IR eligibility; taxi eligibility follows Sleeper) and refuses it if anything fails.
 import { rosterFromToken, evaluateMoves, movesLocked, MOVE_STATES, send, fail } from "../lib/league.js";
 import { setJSON } from "../lib/store.js";
 

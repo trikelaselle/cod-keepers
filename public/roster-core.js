@@ -34,7 +34,7 @@ window.Roster = (() => {
     for (const p of s.ps) {
       if (p.st === "ir" && p.ir === "not") out.push(["bad", "IR not eligible", `${p.name} is on IR but is ${p.irNote}. Only players listed Out can use IR.`]);
       else if (p.st === "ir" && p.ir === "unknown") out.push(["warn", "Check IR status", `${p.name} can only go on IR if Sleeper lists him as Out.`]);
-      if (p.st === "taxi" && !p.taxiOk) out.push(["bad", "Taxi not eligible", `${p.name} isn't in his first two NBA seasons, so he can't go on taxi.`]);
+      if (p.st === "taxi" && p.status !== "taxi") out.push(["warn", "Check taxi", `${p.name} can only go on taxi if Sleeper allows it.`]);
     }
     if (t.emptyStarters && !planned) out.push(["warn", `${t.emptyStarters} empty starter slots`, `${t.emptyStarters} starting slots are empty in Sleeper.`]);
     if (s.payroll > CAP && s.payroll <= HARD) out.push(["warn", "Luxury tax", `Payroll is ${money(s.payroll - CAP)} over the $210 cap, so the buy-in is ${money(s.buyin)}.`]);
@@ -84,6 +84,7 @@ window.Roster = (() => {
   function srcLabel(p) {
     if (p.src === "auction") return `<span class="src new">Won Oct 18 auction</span>`;
     if (p.src === "kept-taxi") return `<span class="src">Kept · taxi, no raise</span>`;
+    if (p.src === "faab") return `<span class="src new">FAAB pickup</span>`;
     return `<span class="src">Kept · 2nd-season raise</span>`;
   }
 
@@ -101,7 +102,7 @@ window.Roster = (() => {
       const cls = [extra, p.st === "cut" ? "cutrow" : "", p.moved && p.st !== "cut" ? "moverow" : ""].join(" ").trim();
       const note = p.st === "cut" ? `<span class="mv">Cut · frees ${money(hitFor(p, p.status))}</span>` : p.moved ? `<span class="mv">Move to ${LABEL[p.st]}</span>` : "";
       const flag = p.st === "ir" && p.ir === "not" ? `<span class="flag">Not eligible for IR: ${esc(p.irNote)}</span>`
-                 : p.st === "taxi" && !p.taxiOk ? `<span class="flag">Not eligible for taxi</span>` : "";
+                 : "";
       return `<tr class="${cls}"><td class="slot ${extra ? "xs" : ""}">${slot}</td><td><span class="pl">${esc(p.name)}</span>${note}${flag}</td>
         <td>${srcLabel(p)}</td><td class="num">${p.s1 == null ? "—" : money(p.s1)}</td><td class="num"><b>${money(p.s2)}</b></td><td class="num">${money(p.hitNow)}</td>${editable ? `<td>${sel(p)}</td>` : ""}</tr>`;
     };

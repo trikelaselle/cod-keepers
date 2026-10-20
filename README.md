@@ -16,10 +16,10 @@ There's no framework and nothing to install. The site is static pages in `public
 
 Keeper decisions are finished, so each team's private link (`/t/<code>`) now opens that team's Season 2 roster instead. The manager marks each player Active, IR, Taxi or Cut, watches payroll, buy-in and compliance update, and submits. Only that team's link can change its moves.
 
-- **The server checks every submission** (`evaluateMoves` in `lib/league.js`) and refuses any that leave the roster out of compliance: more than 15 active, 3 IR or 4 taxi, over the $230 hard cap, a taxi player outside his first two NBA seasons, or an IR player Sleeper doesn't list as Out. Submissions are saved as `moves:<team>` in the database.
+- **The server checks every submission** (`evaluateMoves` in `lib/league.js`) and refuses any that leave the roster out of compliance: more than 15 active, 3 IR or 4 taxi, over the $230 hard cap, or an IR player Sleeper doesn't list as Out. Taxi eligibility follows Sleeper (league rule, Oct 20): if Sleeper allows a player on taxi, the site does too. Submissions are saved as `moves:<team>` in the database.
 - **Submitting doesn't change Sleeper.** The commissioner desk at `/admin` lists each team's submitted moves, payroll before and after, and buy-in, and downloads them all as a CSV. Make the moves in Sleeper, or check that managers did.
 - **`/rosters`** is a public, read-only league board: every team's roster by Sleeper slot, salaries, cap hits and compliance, plus which teams have submitted moves. It has no links and no planning.
-- Roster data is in `lib/rosters.js`, a snapshot of Sleeper from Oct 19, 2026. After teams make their moves in Sleeper, regenerate that file and push.
+- Roster data is in `lib/rosters.js`, a snapshot of Sleeper from Oct 20, 2026. After teams make their moves in Sleeper, regenerate that file and push.
 - Optional `MOVES_DEADLINE` environment variable (for example `2026-10-22T20:00:00-04:00`) locks roster-move submissions. The old `DEADLINE` only applied to keeper picks.
 - **Keeper picks archive:** the keeper submissions (`sub:<team>`) and `lib/teams.js` are kept. Download them from the desk with "Keeper picks archive (CSV)".
 
@@ -29,7 +29,7 @@ Keeper decisions are finished, so each team's private link (`/t/<code>`) now ope
 
 - A team's **cap number** is the most payroll it can carry in-season: the $210 cap, or its payroll at the start of the season if that was higher. A trade must leave both teams at or under their cap numbers.
 - **FAAB** is a team's room under its cap number. Trading FAAB moves cap room: the sender's cap number drops by that amount and the receiver's rises by it. No cap number can go over the $230 hard cap.
-- Rosters come from `lib/rosters.js` with each team's submitted roster moves applied. The rules live in `capNumber` and `evaluateTradeSide` in `lib/league.js`, and the page mirrors them for live feedback.
+- Rosters come from `lib/rosters.js`, plus any roster moves a team submitted after that snapshot (`SNAPSHOT_AT`); older submissions are already in Sleeper and aren't applied twice. The rules live in `capNumber` and `evaluateTradeSide` in `lib/league.js`, and the page mirrors them for live feedback.
 - **Set the season-start payrolls** in `lib/caps.js` (`START_PAYROLL`) once rosters are final. Until then, cap numbers use each team's current payroll. **Record FAAB from completed trades** in `FAAB_TRADED` there, then push.
 - The machine only checks the cap. It doesn't make trades or move FAAB; the commissioner approves and records them.
 

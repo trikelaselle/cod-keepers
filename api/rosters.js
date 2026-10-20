@@ -1,6 +1,6 @@
 // GET /api/rosters -> every team's official Season 2 roster (as pulled from Sleeper)
 // and whether each team has submitted roster moves. Public and read-only: no links, no picks.
-import { ROSTERS, AS_OF, send, fail } from "../lib/league.js";
+import { ROSTERS, AS_OF, isPending, send, fail } from "../lib/league.js";
 import { mgetJSON } from "../lib/store.js";
 
 export default async function handler(req, res) {
@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     send(res, 200, {
       asOf: AS_OF,
       teams: ROSTERS.map((t, i) => ({ key: t.key, team: t.team, manager: t.manager, emptyStarters: t.emptyStarters,
-        players: t.players, submittedAt: subs[i] ? subs[i].submittedAt : null })),
+        players: t.players, submittedAt: isPending(subs[i]) ? subs[i].submittedAt : null })),
     });
   } catch (e) { fail(res, e); }
 }
