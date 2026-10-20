@@ -16,7 +16,7 @@ There's no framework and nothing to install. The site is static pages in `public
 
 Keeper decisions are finished, so each team's private link (`/t/<code>`) now opens that team's Season 2 roster instead. The manager marks each player Active, IR, Taxi or Cut, watches payroll, buy-in and compliance update, and submits. Only that team's link can change its moves.
 
-- **The server checks every submission** (`evaluateMoves` in `lib/league.js`) and refuses any that leave the roster out of compliance: more than 15 active, 3 IR or 4 taxi, over the $230 hard cap, or an IR player Sleeper doesn't list as Out. Taxi eligibility follows Sleeper (league rule, Oct 20): if Sleeper allows a player on taxi, the site does too. Submissions are saved as `moves:<team>` in the database.
+- **The server checks every submission** (`evaluateMoves` in `lib/league.js`) and refuses any that leave the roster out of compliance: more than 15 active, 3 IR or 4 taxi, over the $230 hard cap, IR and taxi eligibility follow Sleeper's league settings (league rule, Oct 20): if Sleeper allows a player on IR or taxi, the site does too. Submissions are saved as `moves:<team>` in the database.
 - **Submitting doesn't change Sleeper.** The commissioner desk at `/admin` lists each team's submitted moves, payroll before and after, and buy-in, and downloads them all as a CSV. Make the moves in Sleeper, or check that managers did.
 - **`/rosters`** is a public, read-only league board: every team's roster by Sleeper slot, salaries, cap hits and compliance, plus which teams have submitted moves. It has no links and no planning.
 - Roster data is in `lib/rosters.js`, a snapshot of Sleeper from Oct 20, 2026. After teams make their moves in Sleeper, regenerate that file and push.
